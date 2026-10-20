@@ -1,4 +1,4 @@
-# Talos Sentinel — pedidos por WhatsApp con IA 
+# Talos Sentinel — Automatización por WhatsApp con IA 
 
 Plataforma para que **varios restaurantes o comercios atiendan pedidos por WhatsApp con un agente de IA**,
 el encargado los gestione en un panel web y los domiciliarios los vean en su propia app — todo espejado en
