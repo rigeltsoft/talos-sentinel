@@ -1,4 +1,4 @@
-# Talos Sentinel — pedidos por WhatsApp con IA (multi-negocio)
+# Talos Sentinel — pedidos por WhatsApp con IA 
 
 Plataforma para que **varios restaurantes o comercios atiendan pedidos por WhatsApp con un agente de IA**,
 el encargado los gestione en un panel web y los domiciliarios los vean en su propia app — todo espejado en
@@ -13,12 +13,12 @@ Chatwoot para que una persona pueda intervenir cuando haga falta.
 
 - 🗣️ **Atiende al cliente en WhatsApp con un agente de IA**: consulta el menú (Google Sheets), cotiza, arma el
   pedido y pide la confirmación.
-- 📋 **Crea el pedido en el panel** (`awaiting_verification`) en cuanto el cliente confirma o manda el
+- 📋 **Crea el pedido en el panel** en cuanto el cliente confirma o manda el
   comprobante de pago.
 - 💳 **Valida pagos por transferencia** cruzando el comprobante con los avisos bancarios (monto exacto, ventana
   de tiempo, pago no reutilizado y firma DKIM/DMARC del correo), o deja el pago para que lo apruebe el
   encargado.
-- 🚦 **Mueve el pedido por estados** (`Verificar pago → Preparando → En camino → Entregado`) y avisa al cliente
+- 🚦 **Mueve el pedido por estados** y avisa al cliente
   en cada cambio.
 - 🛵 **App del domiciliario** servida por el mismo panel (WebView): login con PIN, pedidos asignados, aceptación,
   recogida, entrega con evidencia y GPS.
@@ -49,7 +49,7 @@ WhatsApp (cliente)
 |---|---|---|
 | **Panel** | Node + Hono + tRPC + React + Vite + Tailwind | Interfaz del encargado, API con sesión y proxy hacia n8n |
 | **Orquestación** | n8n (2.x) | Agentes IA, router de mensajes, API del panel y espejo a Chatwoot |
-| **Datos** | PostgreSQL (`orders`, `bot_sessions`, `payment_verifications`…) + MySQL (`businesses`, `users`) | Operación y catálogo de negocios |
+| **Datos** | PostgreSQL  + MySQL  | Operación y catálogo de negocios |
 | **IA** | Modelos de chat (DeepSeek / OpenAI) + LangChain dentro de n8n | Conversación, extracción estructurada del pedido |
 | **Mensajería** | WhatsApp Cloud API (Meta) + Chatwoot | Canal del cliente y bandeja del equipo |
 | **Infra** | Docker + Cloudflare (tunnels) | Despliegue y exposición de webhooks |
@@ -89,18 +89,18 @@ WhatsApp (cliente)
 
 ## Limitaciones y qué no hace
 
-- **La validación automática de pagos depende de que el banco mande un correo**: Nequi (solo cuando entra por
-  Bre-B) y Davivienda sí; **Nequi→Nequi y Daviplata no mandan correo**, así que para esos casos la validación
-  es manual o se necesita otro canal (lector de notificaciones del celular o una pasarela de pago).
+- **La validación automática de pagos depende de que el banco mande un correo**: Nequi solo cuando entra por
+  Bre-B y Davivienda sí; **Nequi→Nequi y Daviplata no mandan correo**, así que para esos casos la validación
+  es manual o se necesita otro canal lector de notificaciones del celular o una pasarela de pago.
 - **Los menús viven en Google Sheets**, no en la base: es cómodo para el dueño del negocio, pero no es lo que
   haría para 50 clientes.
-- **La autorización por PIN de 4 dígitos** es débil por diseño (se compensa con el token firmado y el bloqueo
-  en el borde, pero un PIN de 4 dígitos no es una contraseña).
-- **Es un proyecto colombiano**: las integraciones (Bre-B, Nequi, los precios en COP) están atadas a los rieles
+- **La autorización por PIN de 4 dígitos** es débil por diseño se compensa con el token firmado y el bloqueo
+  en el borde, pero un PIN de 4 dígitos no es una contraseña, tambien se puede mejorar con cloudflared.
+- **Es un proyecto colombiano**: las integraciones Bre-B, Nequi, los precios en COP están atadas a los rieles
   de pago locales.
 - **No es una pasarela de pagos ni un ERP**: no mueve dinero ni gestiona inventario.
 
-## Qué aprendí (y qué haría distinto)
+## Experiencia adquirida 
 
 - Los **fallos más caros son los silenciosos**: un webhook bloqueado, un `status` que nunca coincide, un correo
   que llega con otro formato. Casi todo mi trabajo terminó siendo observabilidad y *fail-safe*: ante la duda,
@@ -112,7 +112,7 @@ WhatsApp (cliente)
 - Lo haría distinto: empezar por **un solo negocio real** y no por el multi-negocio; y escribir las pruebas de
   integración del flujo completo **antes** de añadir funciones.
 
-## Cómo reproducirlo (datos de demostración)
+## Cómo reproducirlo 
 
 ```bash
 # 1) Base de datos de demostración (PostgreSQL)
@@ -133,7 +133,7 @@ O con todo en contenedores:
 docker compose -f demo/docker-compose.demo.yml up
 ```
 
-**Credenciales del demo:** `demo@talos.example` / `demo1234` *(solo existen en la demo, con datos ficticios)*.
+**Credenciales del demo:** `demo@talos.example` / `demo1234` .
 
 ## Estructura del repositorio
 
@@ -152,8 +152,8 @@ demo/           docker-compose de demostración y variables de ejemplo
 MIT — ver [LICENSE](LICENSE).
 
 **Luis Guillermo Reyes Luna** · Montería, Colombia
-· Tecnólogo en Análisis y Desarrollo de Software (ADSO, SENA)
-· `reyeslunaguillermol@gmail.com` · +57 304 228 0978
+· Tecnólogo en Análisis y Desarrollo de Software 
+· `guillermoreyes@talossentinel.com` · +57 302 394 8191
 
 > *Parte del código se escribió con apoyo de asistentes de IA; los requisitos, el modelo de datos, las
 > decisiones, el despliegue y la operación son míos.*
