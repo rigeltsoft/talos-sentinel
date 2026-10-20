@@ -1,0 +1,27 @@
+# dependencias y compilados
+node_modules/
+dist/
+build/
+*.log
+
+# variables de entorno REALES
+.env
+.env.local
+.env.*.local
+
+# llaves y certificados
+*.pem
+*.key
+*.p12
+*.pfx
+serviceAccount*.json
+client_secret_*.json
+
+# datos y respaldos
+*.sql.bak
+*.dump
+backups/
+
+# sistema
+.DS_Store
+Thumbs.db

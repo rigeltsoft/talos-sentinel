@@ -1,0 +1,9 @@
+node_modules
+dist
+.git
+.env
+.env.local
+*.log
+DESPLIEGUE.md
+README.md
+info.md

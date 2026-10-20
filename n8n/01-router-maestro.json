@@ -1,0 +1,308 @@
+{
+  "name": "Router_Maestro_v2_Talos_Sentinel",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## ROUTER MAESTRO v2 - WhatsApp Trigger Nativo\n\n**Arquitectura correcta para multi-cliente:**\n\n1. **UN solo WhatsApp Trigger** (nativo de n8n) con el App ID 1445473700310072\n2. Este nodo se suscribe AUTOMATICAMENTE al webhook de Meta\n3. Maneja el challenge de verificacion de Meta automaticamente\n4. Recibe TODOS los mensajes de TODOS los numeros de la app\n5. El Switch enruta por `phone_number_id` al workflow hijo correcto\n\n**Clientes configurados:**\n- `1004464636088971` → Restaurante Demo (Restaurante)\n- `1095993256941270` → Talos Sentinel (Ventas)\n\n**Reglas de oro:**\n- Este es el UNICO workflow activo con WhatsApp Trigger\n- Los workflows hijos usan Execute Workflow Trigger (NO WhatsApp Trigger)\n- Los workflows hijos NO deben estar activos (se ejecutan on-demand)\n\n**Para agregar un nuevo cliente:**\n1. Agrega el numero en Meta Console\n2. Crea su workflow con Execute Workflow Trigger (NO activar)\n3. Agrega una regla en el Switch con su phone_number_id\n4. Agrega un nodo Ejecutar Workflow apuntando al nuevo workflow"
+      },
+      "id": "35cf97c7-2262-4dcf-8bad-c7b1893ec273",
+      "name": "Nota Explicativa",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2416,
+        1248
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {
+          "messageStatusUpdates": [
+            "all"
+          ]
+        }
+      },
+      "id": "1dfc3127-fe36-446f-88c7-4ccd29ff52d3",
+      "name": "WhatsApp Trigger Router",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        2720,
+        1744
+      ],
+      "webhookId": "router-maestro-talos-v2",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "RNMasH3O9xuxrWIB",
+          "name": "Talos_Prueba"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "route-Restaurante Demo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.metadata.phone_number_id }}",
+                    "rightValue": "1004464636088971"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Agente_Carnaval_De_Sabores"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "route-talos",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.metadata.phone_number_id }}",
+                    "rightValue": "1095993256941270"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Talos Sentinel"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "861adcec-161d-411d-929d-1efd4ec7bfff",
+                    "leftValue": "={{ $json.metadata.phone_number_id }}",
+                    "rightValue": "1004464636088971555",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Perros Richard"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "8fc6a352-d45a-4d8c-a3ff-81d60f0ea777",
+      "name": "Enrutar por phone_number_id",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        2944,
+        1728
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "Rz3YXI42o9Wjc7wq",
+          "cachedResultName": "Talos_Agente_IA_SIMPLIFICADO_v2"
+        },
+        "workflowInputs": {
+          "mappingMode": "passthrough",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "f4fcfe43-1ccc-440a-b2c6-ab8eeb71780a",
+      "name": "Ejecutar WF Talos Sentinel",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3408,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Red de seguridad: numero agregado en Meta pero sin ruta configurada\nconst phoneId = $input.first().json?.metadata?.phone_number_id || 'desconocido';\nconst from = $input.first().json?.messages?.[0]?.from || 'desconocido';\nconst msgText = $input.first().json?.messages?.[0]?.text?.body || '(no texto)';\n\nconsole.log('[Router Maestro v2] ALERTA: phone_number_id sin enrutar:', phoneId, '| De:', from, '| Mensaje:', msgText);\n\nreturn [{\n  json: {\n    alerta: 'phone_number_id no enrutado',\n    phone_number_id: phoneId,\n    from: from,\n    mensaje_preview: msgText.substring(0, 100),\n    timestamp: new Date().toISOString(),\n    accion: 'Agrega este phone_number_id al nodo Switch en el Router Maestro'\n  }\n}];"
+      },
+      "id": "766c0158-2c46-49f1-af8e-fba0f55eaf44",
+      "name": "Log Numero No Enrutado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3168,
+        1936
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Como funciona el enrutamiento\n\n1. El WhatsApp Trigger recibe el mensaje de Meta\n2. Emite los datos con la misma estructura que tus workflows esperan\n3. El Switch lee `metadata.phone_number_id` y decide la rama\n4. Execute Workflow lanza el sub-workflow de forma asincrona\n5. El sub-workflow recibe los datos via passthrough y procesa normalmente\n\n**Formato de datos que recibe cada sub-workflow:**\n```json\n{\n  \"messages\": [{\n    \"from\": \"573000000000\",\n    \"text\": { \"body\": \"Hola\" },\n    \"type\": \"text\"\n  }],\n  \"metadata\": {\n    \"phone_number_id\": \"1095993256941270\",\n    \"display_phone_number\": \"573000000000\"\n  }\n}\n```\n\nEn Talos Sentinel, `$('WhatsApp Trigger').item.json.messages[0].text.body` funciona porque el nodo Execute Workflow Trigger se llama 'WhatsApp Trigger' y recibe estos datos."
+      },
+      "id": "816fd4b5-6db9-42bd-8dd8-f0b3b35d888e",
+      "name": "Nota Enrutamiento",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2720,
+        1248
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://perrosrichard.talos.example.com/webhook/perros-richard-bot",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messages\": [\n    {\n      \"from\": \"{{ $json.messages[0].from }}\",\n      \"text\": {\n        \"body\": \"{{ $json.messages[0].text.body }}\"\n      },\n      \"type\": \"text\"\n    }\n  ],\n  \"metadata\": {\n    \"phone_number_id\": \"{{ $json.metadata.phone_number_id }}\",\n    \"display_phone_number\": \"{{ $json.metadata.display_phone_number }}\"\n  },\n  \"contacts\": [\n    {\n      \"profile\": {\n        \"name\": \"{{ $json.contacts[0].profile.name }}\"\n      },\n      \"wa_id\": \"{{ $json.contacts[0].wa_id }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3488,
+        1904
+      ],
+      "id": "10f44add-e38d-4880-8caf-f44bf7ff7840",
+      "name": "HTTP Request",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tZbkW3N1ZFWqu8Xm",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/tZbkW3N1ZFWqu8Xm",
+          "cachedResultName": "Agente_Carnaval_de_Sabores"
+        },
+        "workflowInputs": {
+          "mappingMode": "passthrough",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "f746c674-1d0e-4f90-b053-2ce63cdf18d8",
+      "name": "Ejecutar WF Carnaval (prueba)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3168,
+        1552
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger Router": {
+      "main": [
+        [
+          {
+            "node": "Enrutar por phone_number_id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrutar por phone_number_id": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar WF Carnaval (prueba)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ejecutar WF Talos Sentinel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Numero No Enrutado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "948642de-eaba-4c11-82bd-eef8bd717d27",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c75a37340830d286576bf4c2a4dd5c46fcdaa1d1c2fe22bc7b247eaaa343e16f"
+  },
+  "id": "7AsKMhhUZedt9Nxy",
+  "tags": [
+    {
+      "updatedAt": "2026-07-24T22:38:25.407Z",
+      "createdAt": "2026-07-24T22:38:25.407Z",
+      "id": "OKSyKbcOVmBWVJq5",
+      "name": "Agente Principal Enruta"
+    }
+  ]
+}

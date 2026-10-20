@@ -1,0 +1,4511 @@
+{
+  "name": "Dashboard_API_Restaurante",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{{ $input.all().length > 0 ? JSON.stringify($input.all().map(i => i.json)) : '[]' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2048,
+        1952
+      ],
+      "id": "bd7fbcf3-d11c-4831-8464-f6b58d770bc9",
+      "name": "Resp Entregas Novedades"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  o.id AS order_id,\n  o.customer_name,\n  o.customer_phone,\n  o.delivery_address,\n  o.total::float AS total,\n  o.shipping_cost::float AS shipping_cost,\n  o.status AS order_status,\n  de.id AS evidence_id,\n  de.delivery_status,\n  de.notes,\n  de.photo_data,\n  de.delivered_at,\n  TO_CHAR(de.delivered_at AT TIME ZONE 'America/Bogota', 'DD/MM/YYYY HH12:MI AM') AS delivered_at_formatted,\n  r.name AS rider_name,\n  r.phone AS rider_phone\nFROM delivery_evidence de\nJOIN orders o ON o.id = de.order_id\nLEFT JOIN delivery_riders r ON r.id = de.rider_id\nWHERE ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR o.tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint)\nORDER BY de.delivered_at DESC\nLIMIT 100;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1840,
+        1952
+      ],
+      "id": "fba93c58-73e9-428f-bbb0-2e6e296b7f02",
+      "name": "Consultar Entregas Novedades",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard/deliveries",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1632,
+        1952
+      ],
+      "id": "686a9763-ee59-42b1-8942-533aa2bafd84",
+      "name": "GET Entregas Novedades",
+      "webhookId": "204774c1-a5c5-4f1d-846c-f8848f48e275"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{{ JSON.stringify({ success: true, phone_number: $json.phone_number }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3536,
+        2400
+      ],
+      "id": "26605086-ee3f-4345-8d85-d03b109f1ef2",
+      "name": "Resp Baja Suscriptor"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE promo_subscribers SET is_active = false, opted_out_at = NOW() WHERE phone_number = '{{ $json.body.phone_number }}' AND ({{ $json.body.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.body.tenant_id || 'NULL' }}::bigint) RETURNING phone_number, is_active;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3328,
+        2400
+      ],
+      "id": "88d1514b-805b-4a74-88e2-30f3ca40b5d7",
+      "name": "Bajar Suscriptor",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/promo-subscribers",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        3120,
+        2400
+      ],
+      "id": "3bff2a28-dad7-4557-977c-501c4a993689",
+      "name": "POST Baja Suscriptor",
+      "webhookId": "dash-refunds-post-001"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{{ JSON.stringify({ success: true }) }}",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3552,
+        2192
+      ],
+      "id": "323d5c42-0d84-4b27-9744-bb3a159153fd",
+      "name": "Resp Borrar Promo"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM promo_history WHERE id = {{ $json.body.id }} AND ({{ $json.body.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.body.tenant_id || 'NULL' }}::bigint) RETURNING id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3344,
+        2192
+      ],
+      "id": "0cb6ae5e-7d4c-4091-9e24-894e373cd3a0",
+      "name": "Borrar Promo Historial",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/promo-history/delete",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        3120,
+        2192
+      ],
+      "id": "28ea59a4-a5bb-4614-9f39-df066a129086",
+      "name": "POST /dashboard/promo-history/delete",
+      "webhookId": "dash-refunds-post-001"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2848,
+        2656
+      ],
+      "id": "8d62781f-4f7f-40a6-887d-0629184a6324",
+      "name": "Resp Ubicacion Rider"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE delivery_riders SET last_lat = {{ $json.body.lat }}, last_lng = {{ $json.body.lng }}, last_seen_at = NOW() WHERE id = {{ $json.body.rider_id }} RETURNING id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2640,
+        2656
+      ],
+      "id": "18be7ef3-9948-4a7b-943f-8a14d5b50b6c",
+      "name": "Guardar Ubicacion",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rider/location",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2448,
+        2656
+      ],
+      "id": "7fb13c2f-c04d-4186-9763-daf87c8d9c9e",
+      "name": "POST Ubicacion Rider",
+      "webhookId": "rider-loc-001"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: 'Ese PIN ya está en uso por otro negocio. Elige otro.' }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2608,
+        1264
+      ],
+      "id": "f20ea18e-4109-4dbd-856e-f716ac00ca6b",
+      "name": "Resp PIN Duplicado"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "rider-saved",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2384,
+        1104
+      ],
+      "id": "280cc3a8-b9e1-4792-89b0-bc30988e7c36",
+      "name": "¿Rider Guardado?"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.businesses) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2864,
+        1984
+      ],
+      "id": "46b31e78-dd3e-4dc6-9f56-0eb686e96cb9",
+      "name": "Resp Negocios Rider"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Lista de negocios activos de la plataforma para la app del domiciliario (React).\n// Se usa para resolver el NOMBRE y el TEMA (color) del negocio del rider tras el\n// login con PIN global (Opción A): GET /rider/businesses ? tenant_id del rider.\n// Mantener al día al crear/editar un negocio (igual que INBOX_MAP en el relay).\n// theme usa los mismos ids del dashboard (businesses.theme en MySQL):\n// purpura | talos | calido | oscuro\nreturn [{ json: { businesses: [\n  { id: 1, name: 'Restaurante Demo - Sabor Autentico', theme: 'purpura' },\n  { id: 3, name: 'Talos Sentinel', theme: 'talos' },\n  { id: 4, name: 'Restaurante Demo', theme: 'calido' }\n] } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        1984
+      ],
+      "id": "90594a49-b36e-4f61-a958-2e2880780bbf",
+      "name": "Listar Negocios Rider"
+    },
+    {
+      "parameters": {
+        "path": "rider/businesses",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2448,
+        1984
+      ],
+      "id": "c8ee71a7-30d3-4199-998b-4afb2e8d434f",
+      "name": "GET Negocios Rider",
+      "webhookId": "rider-biz-001"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $json.phone_number_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1856,
+        2384
+      ],
+      "id": "77255230-0f5a-40da-976d-397576306a8f",
+      "name": "HTTP Opt-in Rider",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xi1Ygeqv6deFhoo2",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepara el mensaje interactivo de opt-in para la entrega hecha desde la app del rider.\n// El phone_number_id del tenant se resuelve desde el mapa (igual que el relay).\nconst TENANT_PHONE = { 1: '1004464636088971', 3: '1095993256941270', 4: '1004464636088971' };\nconst TENANT_NAME  = { 1: 'Restaurante Demo - Sabor Auténtico', 3: 'Talos Sentinel', 4: 'Restaurante Demo' };\nconst order = $('PG Update Order Status').first().json;\nconst tenant = order.tenant_id;\nconst phoneNumberId = TENANT_PHONE[tenant] || '1004464636088971';\nconst customerPhone = order.customer_phone || '';\n\nreturn [{\n  json: {\n    phone_number_id: phoneNumberId,\n    to: customerPhone,\n    payload: {\n      messaging_product: 'whatsapp',\n      to: customerPhone,\n      type: 'interactive',\n      interactive: {\n        type: 'button',\n        body: { text: '🎉 ¡Gracias por tu pedido en ' + (TENANT_NAME[tenant] || 'tu negocio') + '!\\n\\n¿Te gustaría recibir información sobre promociones y descuentos exclusivos por WhatsApp?' },\n        action: {\n          buttons: [\n            { type: 'reply', reply: { id: 'optin_yes', title: 'Sí, me interesa! ✅' } },\n            { type: 'reply', reply: { id: 'optin_no', title: 'No, gracias 🙏' } }\n          ]\n        }\n      }\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        2384
+      ],
+      "id": "2ad80122-3c51-402f-8e14-65db62ec13fc",
+      "name": "Preparar Opt-in Rider"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "opt-rider-cond-1",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "si",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1456,
+        2400
+      ],
+      "id": "160e3467-3629-4f97-ad86-8602ea5acd01",
+      "name": "¿Ya está suscrito? Rider"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH o AS (\n  SELECT customer_phone, tenant_id\n  FROM orders\n  WHERE id = {{ $('PG Update Order Status').item.json.id }}\n),\ns AS (\n  SELECT is_active\n  FROM promo_subscribers\n  WHERE phone_number = (SELECT customer_phone FROM o)\n    AND tenant_id = (SELECT tenant_id FROM o)\n  LIMIT 1\n)\nSELECT\n  CASE WHEN COALESCE((SELECT is_active FROM s), false) THEN 'si' ELSE 'no' END AS ya_suscrito,\n  CASE WHEN COALESCE((SELECT is_active FROM s), false) THEN 'no' ELSE 'si' END AS decision;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1264,
+        2400
+      ],
+      "id": "63c5bf15-e1d6-41ef-9e52-8b9619a906a5",
+      "name": "Verificar Suscripción Rider",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.all().map(i => i.json)) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2848,
+        2160
+      ],
+      "id": "f1ddee1f-9d7e-4131-9253-1ccdd0996eef",
+      "name": "Responder Devoluciones"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT r.id, r.order_id, r.tenant_id, r.items, r.amount, r.reason, r.status, r.created_by, r.created_at,\n       o.customer_name, o.customer_phone, o.total\nFROM order_refunds r\nLEFT JOIN orders o ON o.id = r.order_id\nWHERE ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR r.tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint)\nORDER BY r.created_at DESC\nLIMIT 100;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2640,
+        2160
+      ],
+      "id": "5b7dc68f-dbef-4d02-b3bc-3b7dccbc77fd",
+      "name": "Consultar Devoluciones",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard/refunds",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2432,
+        2160
+      ],
+      "id": "0fad4d03-8fe4-4bd3-86f5-d8401dc24524",
+      "name": "GET Devoluciones",
+      "webhookId": "dash-refunds-get-001"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json[0] || { ok: false }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3552,
+        2000
+      ],
+      "id": "3b2bc871-94af-4b7f-8895-b1d32a64de40",
+      "name": "Responder Devolucion Creada"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO order_refunds (order_id, tenant_id, items, amount, reason, status, created_by)\nSELECT o.id, o.tenant_id,\n       '{{ JSON.stringify($json.body.items || []) }}'::jsonb,\n       {{ $json.body.amount || 0 }},\n       '{{ $json.body.reason ? $json.body.reason.replace(/'/g, \"''\") : NULL }}',\n       '{{ $json.body.status || 'registered' }}',\n       '{{ $json.body.created_by || 'Dashboard' }}'\nFROM orders o\nWHERE o.id = {{ $json.body.order_id }}\n  AND ({{ $json.body.tenant_id || 'NULL' }}::bigint IS NULL OR o.tenant_id = {{ $json.body.tenant_id || 'NULL' }}::bigint)\nRETURNING id, order_id, tenant_id, items, amount, reason, created_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3344,
+        2000
+      ],
+      "id": "36baad8d-b001-4639-a20b-53bc9a09e3ae",
+      "name": "Insertar Devolucion",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/refunds",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        3136,
+        2000
+      ],
+      "id": "7b4d06e3-6504-4c81-8ace-fa4e4fdea1bf",
+      "name": "POST Crear Devolucion",
+      "webhookId": "dash-refunds-post-001"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ insight: $json.insight }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        4000,
+        1776
+      ],
+      "id": "0a6a803a-0d41-46c0-ab59-4e22055acc26",
+      "name": "Responder Insight"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrae el texto del insight de la respuesta de DeepSeek.\nconst content = $json.choices?.[0]?.message?.content ?? 'No se pudo generar el insight.';\nreturn [{ json: { insight: String(content).trim() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3792,
+        1776
+      ],
+      "id": "57a256d9-5812-4e50-8fff-939cb75209d5",
+      "name": "Extraer Insight"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3584,
+        1776
+      ],
+      "id": "4dc3f030-9ad2-4c47-8771-adbae67d70fe",
+      "name": "Llamar DeepSeek",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "7P0t08p0nCCTBxBY",
+          "name": "DeepSeek_Credenciales"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Construye la llamada a DeepSeek con los datos de analytics.\nconst analytics = $input.first().json.data;\n\nconst sys = `Eres un asesor comercial experto de un negocio de comida por WhatsApp. Analizas los datos de los últimos 30 días (productos, ventas por día de la semana, por hora y por zona) y redactas un análisis breve y accionable en español, como lo haría un buen vendedor:\n1. Producto estrella y por qué destaca.\n2. Productos de bajo rendimiento y qué hacer (promo, ajustar precio, retirar).\n3. Mejor día y mejor hora para enviar una promoción, y qué promo sugerirías.\n4. Zona con más demanda y una oportunidad concreta.\nSé concreto y usa cifras. Máximo 220 palabras. Usa viñetas simples (sin markdown pesado).`;\n\nconst user = \"Datos de los últimos 30 días (JSON):\\n\" + JSON.stringify(analytics || {}, null, 1);\n\nreturn [{\n  json: {\n    model: 'deepseek-chat',\n    temperature: 0.7,\n    max_tokens: 700,\n    messages: [\n      { role: 'system', content: sys },\n      { role: 'user', content: user }\n    ]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3376,
+        1776
+      ],
+      "id": "d373d482-d5c1-48f9-8414-ed72adcfd9a3",
+      "name": "Preparar Prompt Insight"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH filt AS (\n  SELECT * FROM orders\n  WHERE ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint)\n    AND status IN ('delivered','cancelled')\n    AND created_at > NOW() - INTERVAL '30 days'\n),\nprods AS (\n  SELECT (p->>'nombre') AS nombre,\n         COALESCE((p->>'cantidad')::int, 1) AS cantidad,\n         COALESCE((p->>'precio')::numeric, 0) AS precio\n  FROM filt o, jsonb_array_elements(COALESCE(o.products, '[]'::jsonb)) AS p\n),\ntop AS (\n  SELECT nombre, SUM(cantidad)::int AS cantidad_total, SUM(precio*cantidad)::numeric(12,2) AS ingresos\n  FROM prods GROUP BY nombre ORDER BY cantidad_total DESC LIMIT 25\n),\ndias AS (\n  SELECT EXTRACT(ISODOW FROM created_at)::int AS dow, COUNT(*)::int AS pedidos,\n         SUM(total + COALESCE(shipping_cost,0))::numeric(12,2) AS ventas\n  FROM filt GROUP BY 1 ORDER BY 1\n),\nhoras AS (\n  SELECT EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Bogota')::int AS hora, COUNT(*)::int AS pedidos,\n         SUM(total + COALESCE(shipping_cost,0))::numeric(12,2) AS ventas\n  FROM filt GROUP BY 1 ORDER BY 1\n),\nzonas AS (\n  SELECT COALESCE(NULLIF(lower(trim(delivery_address)), ''), 'Sin dirección') AS zona, COUNT(*)::int AS pedidos\n  FROM filt WHERE delivery_address IS NOT NULL GROUP BY 1 ORDER BY pedidos DESC LIMIT 15\n)\nSELECT jsonb_build_object(\n  'products', (SELECT jsonb_agg(jsonb_build_object('nombre', nombre, 'cantidad', cantidad_total, 'ingresos', ingresos)) FROM top),\n  'byDay',    (SELECT jsonb_agg(jsonb_build_object('dow', dow, 'pedidos', pedidos, 'ventas', ventas)) FROM dias),\n  'byHour',   (SELECT jsonb_agg(jsonb_build_object('hora', hora, 'pedidos', pedidos, 'ventas', ventas)) FROM horas),\n  'byZone',   (SELECT jsonb_agg(jsonb_build_object('zona', zona, 'pedidos', pedidos)) FROM zonas)\n) AS data;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3168,
+        1776
+      ],
+      "id": "5e96096b-bbaa-4056-be47-868c511c8698",
+      "name": "Consultar Insight",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard/insight",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2960,
+        1776
+      ],
+      "id": "15aea9ec-2dc2-4792-a76d-0ae4701ea0cd",
+      "name": "GET Insight",
+      "webhookId": "dash-insight-001"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json.data) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3360,
+        1600
+      ],
+      "id": "2c423f8e-26db-4a14-a721-f867cee3889f",
+      "name": "Responder Analytics"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH filt AS (\n  SELECT * FROM orders\n  WHERE ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint)\n    AND status IN ('delivered','cancelled')\n    AND created_at > NOW() - INTERVAL '30 days'\n),\nprods AS (\n  SELECT (p->>'nombre') AS nombre,\n         COALESCE((p->>'cantidad')::int, 1) AS cantidad,\n         COALESCE((p->>'precio')::numeric, 0) AS precio\n  FROM filt o, jsonb_array_elements(COALESCE(o.products, '[]'::jsonb)) AS p\n),\ntop AS (\n  SELECT nombre, SUM(cantidad)::int AS cantidad_total, SUM(precio*cantidad)::numeric(12,2) AS ingresos\n  FROM prods GROUP BY nombre ORDER BY cantidad_total DESC LIMIT 25\n),\ndias AS (\n  SELECT EXTRACT(ISODOW FROM created_at)::int AS dow, COUNT(*)::int AS pedidos,\n         SUM(total + COALESCE(shipping_cost,0))::numeric(12,2) AS ventas\n  FROM filt GROUP BY 1 ORDER BY 1\n),\nhoras AS (\n  SELECT EXTRACT(HOUR FROM created_at AT TIME ZONE 'America/Bogota')::int AS hora, COUNT(*)::int AS pedidos,\n         SUM(total + COALESCE(shipping_cost,0))::numeric(12,2) AS ventas\n  FROM filt GROUP BY 1 ORDER BY 1\n),\nzonas AS (\n  SELECT COALESCE(NULLIF(lower(trim(delivery_address)), ''), 'Sin dirección') AS zona, COUNT(*)::int AS pedidos\n  FROM filt WHERE delivery_address IS NOT NULL GROUP BY 1 ORDER BY pedidos DESC LIMIT 15\n)\nSELECT jsonb_build_object(\n  'products', (SELECT jsonb_agg(jsonb_build_object('nombre', nombre, 'cantidad', cantidad_total, 'ingresos', ingresos)) FROM top),\n  'byDay',    (SELECT jsonb_agg(jsonb_build_object('dow', dow, 'pedidos', pedidos, 'ventas', ventas)) FROM dias),\n  'byHour',   (SELECT jsonb_agg(jsonb_build_object('hora', hora, 'pedidos', pedidos, 'ventas', ventas)) FROM horas),\n  'byZone',   (SELECT jsonb_agg(jsonb_build_object('zona', zona, 'pedidos', pedidos)) FROM zonas)\n) AS data;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3152,
+        1600
+      ],
+      "id": "d57492ce-d413-487d-b163-7eb6fe6829d4",
+      "name": "Consultar Analytics",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard/analytics",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2960,
+        1600
+      ],
+      "id": "5eb38fd8-6bf6-4004-81ca-4783da5427c1",
+      "name": "GET Analytics",
+      "webhookId": "dash-analytics-001"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.body.base_url }}/api/v1/accounts/{{ $json.body.account_id }}/conversations/{{ $json.body.conversation_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $json.body.content }}"
+            },
+            {
+              "name": "message_type",
+              "value": "outgoing"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "attachments[]",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3264,
+        2688
+      ],
+      "id": "15a9e35e-c955-48ea-980e-dc26856bb0fe",
+      "name": "POST_Chatwoot_Adjunto",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HFI0WdmoRpcjN59t",
+          "name": "Chatwoot Admin Restaurante Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte el adjunto base64 del dashboard en binario para subirlo a Chatwoot (multipart).\nconst item = $input.first();\nconst { attachment } = item.json.body || {};\nif (!attachment || !attachment.data_base64) {\n  return [item];\n}\nconst buffer = Buffer.from(attachment.data_base64, 'base64');\nconst binary = await this.helpers.prepareBinaryData(\n  buffer,\n  attachment.name || 'adjunto',\n  attachment.mime || 'application/octet-stream'\n);\nreturn [{ json: item.json, binary: { data: binary } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        2688
+      ],
+      "id": "fe40b52d-03f9-4367-8eb1-6152bee97094",
+      "name": "Preparar Adjunto Chatwoot"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cw-attach-cond-001",
+              "leftValue": "={{ !!($json.body.attachment && $json.body.attachment.data_base64) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2704,
+        2832
+      ],
+      "id": "371efe47-dd04-4e8f-a419-6465bdb7704e",
+      "name": "¿Hay Adjunto?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.body.base_url }}/api/v1/accounts/{{ $json.body.account_id }}/conversations/{{ $json.body.conversation_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "content",
+              "value": "={{ $json.body.content }}"
+            },
+            {
+              "name": "message_type",
+              "value": "outgoing"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3024,
+        2848
+      ],
+      "id": "d5515361-b7c0-46b2-b568-84284936796c",
+      "name": "POST_Chatwoot_Mensaje",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HFI0WdmoRpcjN59t",
+          "name": "Chatwoot Admin Restaurante Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatwoot-send",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2464,
+        2832
+      ],
+      "id": "5fcf4c43-7334-4671-8dca-7c316a967ab5",
+      "name": "Webhook_POST_Enviar",
+      "webhookId": "chatwoot-send-001"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.query.base_url }}/api/v1/accounts/{{ $json.query.account_id }}/conversations/{{ $json.query.conversation_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2672,
+        2976
+      ],
+      "id": "9f4bd6a7-2f5b-4229-b816-32762191eaa5",
+      "name": "GET_Chatwoot_Mensajes",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HFI0WdmoRpcjN59t",
+          "name": "Chatwoot Admin Restaurante Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "chatwoot-messages",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2464,
+        2976
+      ],
+      "id": "d64e9e63-d1ec-4c83-8d02-7ac33c3360d9",
+      "name": "Webhook_GET_Mensajes",
+      "webhookId": "chatwoot-msg-001"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.query.base_url }}/api/v1/accounts/{{$json.query.account_id}}/conversations",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "inbox_id",
+              "value": "={{ $json.query.inbox_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2640,
+        2400
+      ],
+      "id": "8148460e-e2fb-4765-a1f7-6d376bac294f",
+      "name": "GET_Chatwoot_Conversaciones",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "HFI0WdmoRpcjN59t",
+          "name": "Chatwoot Admin Restaurante Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "chatwoot-conversations",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        2432,
+        2400
+      ],
+      "id": "78b06e83-b68b-461d-a0fe-81bb5bf09fb9",
+      "name": "Webhook_GET_Conversaciones",
+      "webhookId": "chatwoot-conv-001"
+    },
+    {
+      "parameters": {
+        "content": "## 🔔 CHATS DE LA IA EN EL DASHBOARD CHATWOOT\n\n**POST /manager/chat-conversations**\n→ Guarda/actualiza el FCM token del encargado en `restaurant_config`\n→ Key: `manager_fcm_token`\n→ Usa ON CONFLICT (key) DO UPDATE\n\nEste token permite enviar push notifications al celular del encargado cuando ocurren novedades en domicilios.",
+        "height": 224,
+        "width": 592,
+        "color": 5
+      },
+      "id": "8e6181ea-9c69-4463-bf83-2bafb32088db",
+      "name": "🔔 Nota: Manager1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        4000,
+        2528
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  o.id,\n  o.customer_name,\n  COALESCE(o.customer_phone, '') as customer_phone,\n  COALESCE(o.order_type, 'Domicilio') as order_type,\n  COALESCE(o.products, '[]'::jsonb) as products,\n  o.total,\n  COALESCE(o.shipping_cost, 0) as shipping_cost,\n  COALESCE(o.payment_method, 'Efectivo') as payment_method,\n  o.status,\n  COALESCE(o.delivery_address, '') as delivery_address,\n  COALESCE(r.name, 'Sin asignar') as rider_name,\n  o.created_at,\n  o.updated_at\nFROM orders o\nLEFT JOIN delivery_riders r ON r.id = o.rider_id\nWHERE o.status IN ('delivered', 'cancelled')\n  AND ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR o.tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint)\n  AND o.created_at > NOW() - INTERVAL '30 days'\nORDER BY o.created_at DESC\nLIMIT 200;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1232,
+        768
+      ],
+      "id": "672f955c-4952-4911-92ee-5c82a3560378",
+      "name": "Consultar Historial  Ventas",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.all().map(i => i.json)) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1536,
+        848
+      ],
+      "id": "17234696-860a-4571-8b51-fecb31090eda",
+      "name": "Responder Historial Ventas"
+    },
+    {
+      "parameters": {
+        "path": "dashboard/sales-history",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        992,
+        768
+      ],
+      "id": "5ed75ccd-1bfa-4887-a932-d7335e31b81e",
+      "name": "Get Historial Ventas",
+      "webhookId": "8ab22237-7d0f-41b4-a765-1c05fa83c0fe"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Restaurante Demo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "66d9f87e-7390-43ef-9395-bfc6e4ea3ec8",
+      "name": "Espejo Entregado",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        1248,
+        2224
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4447f36c-4027-40aa-b933-4ccc84834612",
+              "name": "tenant_id",
+              "value": "={{ $('PG Update Order Status').first().json.tenant_id }}",
+              "type": "number"
+            },
+            {
+              "id": "6cba376e-701d-429d-970b-ac47447cbaf3",
+              "name": "phone",
+              "value": "={{ $('PG Update Order Status').first().json.customer_phone }}",
+              "type": "string"
+            },
+            {
+              "id": "aa1275f3-af84-43cf-87b5-fb747eb3531c",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "cbbe818e-fa1c-4761-b6df-4c120502e08b",
+              "name": "content",
+              "value": "={{ ($('PG Update Order Status').item.json.status === 'delivered' ? '✅ *¡Tu pedido fue entregado!*\\n\\n¡Gracias por tu compra! Esperamos que lo disfrutes. 🍕\\n\\n📝 ¿Nos ayudas con tu opinión?\\nhttps://docs.google.com/forms/d/e/1FAIpQLSeGf4J1m8i5Z0uNXa3Pare1F-vtTE771RHfsoP_ji_NWb7cUg/viewform\\n\\n_' : '') + ({1:'Restaurante Demo - Sabor Auténtico',3:'Talos Sentinel',4:'Restaurante Demo'}[$('PG Update Order Status').item.json.tenant_id] || 'Restaurante') + '_' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a120992c-ea11-48c3-a935-79a8d3f57b91",
+      "name": "Preparar Espejo Entregado",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1072,
+        2224
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Restaurante Demo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "8ba10a34-9f41-4816-995d-19e011d1cfa9",
+      "name": "Espejo Estado",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        3184,
+        848
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "766d29d2-98b7-4b80-9020-595f9545b042",
+              "name": "tenant_id",
+              "value": "={{ $('POST Avanzar Pedido').first().json.body.tenant_id }}",
+              "type": "number"
+            },
+            {
+              "id": "28ad3579-a841-4def-9744-c9c7134f61b9",
+              "name": "phone",
+              "value": "={{ $('Ejecutar Avance').first().json.customer_phone }}",
+              "type": "string"
+            },
+            {
+              "id": "96aa31af-88e2-4317-8c81-c14a94fde6dc",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "5e687a49-5481-4e58-98e5-e248c0298e03",
+              "name": "content",
+              "value": "={{\n  $('Ejecutar Avance').first().json.new_status === 'preparing'\n    ? '🔥 *¡Tu pedido está siendo preparado!*\\n\\nNuestro equipo ya está trabajando en tu pedido. Te avisaremos cuando esté en camino.\\n\\n_' + ($('POST Avanzar Pedido').first().json.body.business_name || 'Restaurante') + '_'\n  : $('Ejecutar Avance').first().json.new_status === 'delivering'\n    ? '🛵 *¡Tu pedido va en camino!*\\n\\nEl domiciliario ya salió con tu pedido. ¡Prepárate para recibirlo!\\n\\n_' + ($('POST Avanzar Pedido').first().json.body.business_name || 'Restaurante') + '_'\n  : $('Ejecutar Avance').first().json.new_status === 'delivered'\n    ? '✅ *¡Pedido entregado!*\\n\\n¡Gracias por tu compra! Esperamos que disfrutes tu comida. 🍕\\n\\n📝 ¿Nos ayudas con tu opinión? Solo toma 30 segundos:\\n' + ({1:'https://tinyurl.com/Restaurante Demo-encuesta',4:'https://docs.google.com/forms/d/e/1FAIpQLSeGf4J1m8i5Z0uNXa3Pare1F-vtTE771RHfsoP_ji_NWb7cUg/viewform'}[$('POST Avanzar Pedido').first().json.body.tenant_id] || 'https://tinyurl.com/Restaurante Demo-encuesta') + '\\n\\nTu feedback nos ayuda a mejorar cada día.\\n\\n_' + ($('POST Avanzar Pedido').first().json.body.business_name || 'Restaurante') + '_'\n  : $('Ejecutar Avance').first().json.new_status === 'ready_pickup'\n    ? '📦 *¡Tu pedido está listo!*\\n\\nYa puedes pasar a recogerlo. ¡Te esperamos!\\n\\n_' + ($('POST Avanzar Pedido').first().json.body.business_name || 'Restaurante') + '_'\n  : ''\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "be998899-65a1-4610-8988-806b09ce3511",
+      "name": "Preparar Espejo Estado",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        2992,
+        848
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Restaurante Demo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "8bc1d119-e93d-4b18-9179-8816794b89e0",
+      "name": "Espejo Rechazado",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        2112,
+        768
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3847cd00-3020-4bae-9305-f7e36cb66381",
+              "name": "phone",
+              "value": "={{ $('Ejecutar Verificación').first().json.result.customer_phone }}",
+              "type": "string"
+            },
+            {
+              "id": "ebba2902-0130-4faa-8da5-42d829d5aa29",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "6605104b-0177-4519-bdbd-24a58c9e1f9c",
+              "name": "content",
+              "value": "=❌ *Pago no verificado*\n\nHola {{ $('Ejecutar Verificación').first().json.result.customer_name }}, no pudimos verificar tu pago. Por favor revisa y envía nuevamente el comprobante, o contáctanos al {{ ({1:'300 322 9261',4:'316 781 5333'}[$('POST Verificar Pago').first().json.body.tenant_id] || '316 781 5333') }}.\n\n_{{ $('POST Verificar Pago').first().json.body.business_name || 'Restaurante' }}_",
+              "type": "string"
+            },
+            {
+              "id": "9002d052-a965-4e94-a611-30478f34c0fe",
+              "name": "tenant_id",
+              "value": "={{ $('POST Verificar Pago').first().json.body.tenant_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "77cc223c-64f1-4f76-b808-6a345c0d6269",
+      "name": "Preparar Espejo Rechazado",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1904,
+        768
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Restaurante Demo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "cf0acaa8-fff4-4c10-874f-9e1c7fef32fb",
+      "name": "Espejo Aprobado",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        2112,
+        608
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1cbdc9d-6c2d-4233-97fa-472dc87b055e",
+              "name": "tenant_id",
+              "value": "={{ $('POST Verificar Pago').first().json.body.tenant_id }}",
+              "type": "number"
+            },
+            {
+              "id": "ee978a20-a289-4071-8064-71e14acea303",
+              "name": "phone",
+              "value": "={{ $('Ejecutar Verificación').first().json.result.customer_phone }}",
+              "type": "string"
+            },
+            {
+              "id": "ba351a0d-2d5d-4b28-8d79-b9129c4712e0",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "de92a36b-908d-43c0-b27b-fdc36339a8c4",
+              "name": "content",
+              "value": "=✅ *¡Tu pago ha sido verificado!*\n\nHola {{ $('Ejecutar Verificación').first().json.result.customer_name }}, tu pago fue confirmado exitosamente.\n\n🍕 Tu pedido está siendo preparado. ¡Gracias por tu compra!\n\n_{{ $('POST Verificar Pago').first().json.body.business_name || 'Restaurante' }}_",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b756a030-c333-46da-8082-b9c272cfc984",
+      "name": "Preparar Espejo Aprobado",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1904,
+        608
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "content": "## 📱 APP DEL DOMICILIARIO\n\n**POST /rider/login**\n→ Hash del PIN → consulta PostgreSQL\n→ Si ID > 0 → login OK con datos del rider\n→ Si no → \"PIN incorrecto\"\n\n**GET /rider/orders**\n→ Pedidos en status = 'delivering' asignados al rider\n→ Incluye: dirección, total, productos, coordenadas GPS\n\n**POST /rider/deliver**\n→ Guarda evidencia en `delivery_evidence` (foto, notas)\n→ Actualiza status de la orden\n→ Si delivered → notifica al cliente con link de encuesta\n→ Si novedad (no_answer, etc.) → notifica al encargado por WA\n\n**GET /rider/history**\n→ Entregas del mes actual (zona Bogotá)\n→ Campos: total, shipping_cost, grand_total, delivery_status, delivered_at\n\n**POST /rider/update-token**\n→ Guarda FCM token para push notifications\n",
+        "height": 420,
+        "width": 620,
+        "color": 3
+      },
+      "id": "d3932772-4ab3-4aec-8f5a-410297cf068f",
+      "name": "📱 Nota: App Domiciliario",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        1888
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🛵 ADMINISTRACIÓN DE DOMICILIARIOS\n\n**GET /dashboard/riders**\n→ Lista domiciliarios con conteo de pedidos activos y entregados (24h)\n\n**POST /dashboard/riders**\n→ CRUD: create / update / toggle\n→ Hash de PIN con función simple (bit shifting)\n→ Campos: name, pin_hash, is_active\n\n**POST /dashboard/assign-rider**\n→ UPDATE rider_id en la orden\n→ Consulta token FCM del rider\n→ Envía push notification Firebase Cloud Messaging\n→ Título: \"Nuevo pedido asignado 🛵\"\n\n**FCM:** Usa service account de proyecto `talos-sentinel`\n",
+        "height": 380,
+        "width": 720
+      },
+      "id": "6bec0ad8-77ad-433a-9822-b639d7e8954f",
+      "name": "🛵 Nota: Admin Domiciliarios",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3072,
+        1120
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🎯 PROMOCIONES Y MARKETING\n\n**GET /promo-subscribers**\n→ Lista teléfono, nombre y fecha de suscripción\n\n**POST /dashboard/send-promo**\n→ Obtiene suscriptores activos\n→ Divide en lotes de 10 (splitInBatches)\n→ Envía template WA: `promocion_informativa_Restaurante Demo|es_CO`\n→ Registra en promo_history (evita duplicados < 1 minuto)\n\n**GET /promo-history**\n→ Últimas 20 promociones enviadas\n→ Campos: title, description, sent_count, sent_at\n\n**Template WA usa 2 parámetros:**\n1. Título de la promo\n2. Descripción de la promo\n",
+        "height": 380,
+        "width": 620,
+        "color": 2
+      },
+      "id": "eebf899b-cb45-4eec-b4bc-42c1aba31903",
+      "name": "🎯 Nota: Promociones",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -544,
+        1184
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2128,
+        1728
+      ],
+      "id": "a6055669-e5ba-4077-8de4-5b45f5e17a8a",
+      "name": "Recibir_Notificacion"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO restaurant_config (tenant_id, key, value, updated_at)\nVALUES ({{ $json.body.tenant_id }}, 'manager_fcm_token', '{{ $json.body.fcm_token }}', NOW())\nON CONFLICT (tenant_id, key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()\nRETURNING tenant_id, key, value;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1888,
+        1728
+      ],
+      "id": "02a57f37-e45c-41ad-b944-0d9aa8ad8222",
+      "name": "Guardar_Token_Notificacion",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "manager/update-token",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        1648,
+        1728
+      ],
+      "id": "49c8c055-9711-4dd2-9b38-163646aae0de",
+      "name": "Notificacion_Manager",
+      "webhookId": "8a69708c-e0bd-4057-bf4b-dc92ca8047de"
+    },
+    {
+      "parameters": {
+        "content": "## 🔔 NOTIFICACIONES AL ENCARGADO\n\n**POST /manager/update-token**\n→ Guarda/actualiza el FCM token del encargado en `restaurant_config`\n→ Key: `manager_fcm_token`\n→ Usa ON CONFLICT (key) DO UPDATE\n\nEste token permite enviar push notifications al celular del encargado cuando ocurren novedades en domicilios.\n",
+        "height": 240,
+        "width": 560,
+        "color": 5
+      },
+      "id": "2b1aa56d-b910-4e66-9044-205c3f373b0f",
+      "name": "🔔 Nota: Manager",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2288,
+        1680
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        368,
+        2960
+      ],
+      "id": "2b69f122-9e27-4475-b357-ed8d869b03af",
+      "name": "Enviar_Notificacion_Rider_Token"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE delivery_riders \nSET fcm_token = '{{ $json.body.fcm_token }}'\nWHERE id = {{ $json.body.rider_id }}\nRETURNING id, name, fcm_token;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        128,
+        2960
+      ],
+      "id": "4d17b6d4-4837-4e92-a725-a5b9db79b2bf",
+      "name": "Consultar_Token_Rider",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rider/update-token",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        2960
+      ],
+      "id": "c257b3d3-5779-4d6e-9ec5-17b3973368a4",
+      "name": "Notificar_a_Rider",
+      "webhookId": "25b73478-a3d6-4490-92d1-e8de60641118"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $input.all().length > 0 ? JSON.stringify($input.all().map(i => i.json)) : '[]' }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        368,
+        2800
+      ],
+      "id": "79f44b73-eb29-4e06-9f34-bc5f1e7d52cc",
+      "name": "Responder_a_consulta"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  o.id,\n  o.customer_name,\n  o.delivery_address,\n  o.payment_method,\n  o.total::float,\n  o.shipping_cost::float,\n  (o.total::float + o.shipping_cost::float) AS grand_total,\n  de.delivery_status,\n  de.notes AS delivery_notes,\n  de.delivered_at,\n  TO_CHAR(de.delivered_at AT TIME ZONE 'America/Bogota', 'DD/MM/YYYY HH12:MI AM') AS delivered_at_formatted\nFROM orders o\nJOIN delivery_evidence de ON de.order_id = o.id\nWHERE o.rider_id = {{ $json.query.rider_id }}\n  AND o.tenant_id = (SELECT tenant_id FROM delivery_riders WHERE id = {{ $json.query.rider_id }})\n  AND de.delivered_at >= DATE_TRUNC('month', NOW() AT TIME ZONE 'America/Bogota')\n  AND de.delivered_at < DATE_TRUNC('month', NOW() AT TIME ZONE 'America/Bogota') + INTERVAL '1 month'\nORDER BY de.delivered_at DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        128,
+        2800
+      ],
+      "id": "b2c2b5df-bad4-4352-9fe4-9bb0d0dfdd1a",
+      "name": "Consulta_historial_domiciliario",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "rider/history",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        2800
+      ],
+      "id": "f1793a3f-41e6-4da1-8d21-e7d05c53072f",
+      "name": "Historial_Domiciliario",
+      "webhookId": "094f18f5-8e0b-41de-a6c6-fad5c99d6402"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Resp Save Deliver",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        2384
+      ],
+      "id": "4f7c140e-977b-4ddf-a114-84cc0fc77810"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('POST /rider/deliver').first().json.body.phone_number_id || ({1:'1004464636088971',3:'1095993256941270',4:'1004464636088971'}[$('POST /rider/deliver').first().json.body.tenant_id] || '1004464636088971') }}",
+        "recipientPhoneNumber": "={{ ({1:'<WHATSAPP_ENCARGADO_Restaurante Demo>',3:'<WHATSAPP_ENCARGADO_TALOS>',4:'573000000000'}[$('POST /rider/deliver').first().json.body.tenant_id] || '573000000000') }}",
+        "textBody": "={{ '⚠️ *Novedad en domicilio*\\n\\nPedido #' + $('POST /rider/deliver').item.json.body.order_id + ' reportó una novedad:\\n\\n' + ($('POST /rider/deliver').item.json.body.delivery_status === 'no_answer' ? '🚪 *No abrieron la puerta*' : '⚠ *Problema en entrega*') + '\\n\\n' + ($('POST /rider/deliver').item.json.body.notes ? '📝 Nota: ' + $('POST /rider/deliver').item.json.body.notes : '') + '\\n\\nDomiciliario ID: ' + $('POST /rider/deliver').item.json.body.rider_id + '\\n\\n_' + ($('POST /rider/deliver').first().json.body.business_name || 'Restaurante') + '_' }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        2448
+      ],
+      "id": "b4a19787-9781-4172-9dba-04773b0cef08",
+      "name": "Notificar_Novedad_a_Encargado",
+      "webhookId": "88222e01-e124-4369-8c92-b4e1d5e229e3",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('POST /rider/deliver').first().json.body.phone_number_id || '1004464636088971' }}",
+        "recipientPhoneNumber": "={{ $json.customer_phone }}",
+        "textBody": "={{ ($json.status === 'delivered' ? '✅ *¡Tu pedido fue entregado!*\\n\\n¡Gracias por tu compra! Esperamos que lo disfrutes. 🍕\\n\\n📝 ¿Nos ayudas con tu opinión?\\nhttps://docs.google.com/forms/d/e/1FAIpQLSeGf4J1m8i5Z0uNXa3Pare1F-vtTE771RHfsoP_ji_NWb7cUg/viewform\\n\\n_' : '') + ({1:'Restaurante Demo - Sabor Auténtico',3:'Talos Sentinel',4:'Restaurante Demo'}[$json.tenant_id] || 'Restaurante') + '_' }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        2224
+      ],
+      "id": "dbb49583-0db4-4353-a7ae-417212d5663c",
+      "name": "Notificar Estado al Cliente1",
+      "webhookId": "5294d85b-110e-4e26-9e3b-fbc254fa7f65",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f1f5aa93-a5f3-4adb-8359-8e22606cc0db",
+              "leftValue": "={{ $('POST /rider/deliver').item.json.body.delivery_status }}",
+              "rightValue": "delivered",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        592,
+        2304
+      ],
+      "id": "d97d7557-22a8-40f7-bdb1-e113feaf1d79",
+      "name": "Validar_Estado"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders \nSET status = '{{ $('POST /rider/deliver').item.json.body.delivery_status === 'delivered' ? 'delivered' : 'delivering' }}',\n    updated_at = NOW()\nWHERE id = {{ $('POST /rider/deliver').item.json.body.order_id }}\n  AND tenant_id = (SELECT tenant_id FROM delivery_riders WHERE id = {{ $('POST /rider/deliver').item.json.body.rider_id }})\nRETURNING id, status, customer_phone, customer_name, tenant_id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        2304
+      ],
+      "id": "79f2fd1c-74ca-45c2-95d3-f622981c36e2",
+      "name": "PG Update Order Status",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO delivery_evidence (order_id, rider_id, photo_data, delivery_status, notes, tenant_id)\nVALUES (\n  {{ $json.body.order_id }},\n  {{ $json.body.rider_id }},\n  {{ $json.body.photo_data ? \"'\" + $json.body.photo_data.replace(/'/g,\"''\") + \"'\" : 'NULL' }},\n  '{{ $json.body.delivery_status || 'delivered' }}',\n  {{ $json.body.notes ? \"'\" + $json.body.notes.replace(/'/g,\"''\") + \"'\" : 'NULL' }},\n  (SELECT tenant_id FROM orders WHERE id = {{ $json.body.order_id }})\n);",
+        "options": {}
+      },
+      "name": "PG Save Deliver",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        176,
+        2304
+      ],
+      "id": "1eb34b9b-c04b-416f-8ded-61fb759e6087",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rider/deliver",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "POST /rider/deliver",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        2304
+      ],
+      "id": "4c69ce03-b942-4fb0-8ddf-aa29b2df0798",
+      "webhookId": "24275d72-b1df-4756-805f-4c6935b81af5"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $input.all().length > 0 ? JSON.stringify($input.all().map(i => i.json)) : '[]' }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Resp Get Orders",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        2016
+      ],
+      "id": "ae2a57e4-fb88-4317-b512-60c5ec2ebb40"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  o.id,\n  o.customer_name,\n  o.customer_phone,\n  o.delivery_address,\n  o.payment_method,\n  o.total::float AS total,\n  o.shipping_cost::float AS shipping_cost,\n  o.products,\n  o.latitude::float AS latitude,\n  o.longitude::float AS longitude,\n  o.status,\n  o.rider_accepted_at\nFROM orders o\nWHERE o.rider_id = {{ $json.query.rider_id }}\n  AND o.tenant_id = (SELECT tenant_id FROM delivery_riders WHERE id = {{ $json.query.rider_id }})\n  AND o.status IN ('preparing','delivering')\nORDER BY o.created_at DESC;",
+        "options": {}
+      },
+      "name": "PG Get Orders",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        272,
+        2016
+      ],
+      "id": "fa8e3bb6-84ab-45e9-a585-96fb0ac0d37b",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "rider/orders",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "GET /rider/orders",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        32,
+        2016
+      ],
+      "id": "050b572a-422c-4c86-9cd0-9214cd3dbdfd",
+      "webhookId": "495abba5-2b90-43a0-88f5-d2e62d2ddca0"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: 'PIN incorrecto' }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Resp Login Fail",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        1936
+      ],
+      "id": "437ce8d6-1cef-4ae8-8121-d6feca6bd497"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, rider: $json }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Resp Login OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        1728
+      ],
+      "id": "f99c70e3-8aba-409f-901e-df26afa6a337"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "verify-id",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "name": "IF Login Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        1824
+      ],
+      "id": "274bc231-8d5d-4ee3-b1ea-a487e3d2a6f6"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}",
+        "options": {}
+      },
+      "name": "PG Check Login",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        512,
+        1824
+      ],
+      "id": "eef6f937-12e7-4ee1-a149-ef8eca301c79",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function simpleHash(pin) {\n  let hash = 0;\n  for (let i = 0; i < pin.length; i++) {\n    hash = ((hash << 5) - hash) + pin.charCodeAt(i);\n    hash |= 0;\n  }\n  return Math.abs(hash).toString(16).padStart(8, '0');\n}\n\nconst pin = $json.body.pin?.toString();\nif (!pin) throw new Error('PIN requerido');\n\nconst pinHash = simpleHash(pin);\n\n// PINs son GLOBALMENTE únicos (verificados al crear el rider) → el login no\n// necesita saber el negocio; el tenant se deriva del rider encontrado.\nreturn [{ json: {\n  pin_hash: pinHash,\n  query: `SELECT id, name, is_active, tenant_id FROM delivery_riders WHERE pin_hash = '${pinHash}' AND is_active = true LIMIT 1;`\n} }];"
+      },
+      "name": "Code Hash Login",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        1824
+      ],
+      "id": "9b65da23-e46f-4781-a67f-8235ae55e2da"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rider/login",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "POST /rider/login",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        32,
+        1824
+      ],
+      "id": "f05df941-2327-4d34-83e8-bdb0fc08d546",
+      "webhookId": "01143cfd-cc14-4f17-9dc9-3df6f8838030"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, order_id: $json.id, rider_id: $json.rider_id }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Resp Assign Rider",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2608,
+        1520
+      ],
+      "id": "6e67153b-dce1-489f-abb6-10212baa62a7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Si no hay token, saltar silenciosamente\nif (!items[0]?.json?.fcm_token) {\n  return [{ json: { skipped: true, reason: 'No FCM token' } }];\n}\n\nconst fcmToken = items[0].json.fcm_token;\nconst riderName = items[0].json.name;\nconst orderId = $('PG Assign Rider').first().json.id;\n\n// Leer service account\n// La llave llega del .env como una sola línea con \\n escapados:\n// se convierten a saltos de línea reales antes de firmar el JWT.\nconst rawKey = ($env.FIREBASE_PRIVATE_KEY || '').replace(/\\\\n/g, '\\n');\nconst serviceAccount = {\n  project_id: $env.FIREBASE_PROJECT_ID,\n  client_email: $env.FIREBASE_CLIENT_EMAIL,\n  private_key: rawKey\n};\n\n\n// Generar JWT para OAuth2\nconst crypto = require('crypto');\n\nconst now = Math.floor(Date.now() / 1000);\nconst header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');\nconst payload = Buffer.from(JSON.stringify({\n  iss: serviceAccount.client_email,\n  scope: 'https://www.googleapis.com/auth/firebase.messaging',\n  aud: 'https://oauth2.googleapis.com/token',\n  iat: now,\n  exp: now + 3600\n})).toString('base64url');\n\nconst sign = crypto.createSign('RSA-SHA256');\nsign.update(`${header}.${payload}`);\nconst signature = sign.sign(serviceAccount.private_key, 'base64url');\nconst jwt = `${header}.${payload}.${signature}`;\n\n// Obtener access token\nconst https = require('https');\n\nconst postData = `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`;\n\nconst accessToken = await new Promise((resolve, reject) => {\n  const req = https.request({\n    hostname: 'oauth2.googleapis.com',\n    path: '/token',\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/x-www-form-urlencoded',\n      'Content-Length': Buffer.byteLength(postData)\n    }\n  }, (res) => {\n    let data = '';\n    res.on('data', chunk => data += chunk);\n    res.on('end', () => resolve(JSON.parse(data).access_token));\n  });\n  req.on('error', reject);\n  req.write(postData);\n  req.end();\n});\n\n// Enviar push FCM\nconst projectId = serviceAccount.project_id;\nconst fcmBody = JSON.stringify({\n  message: {\n    token: fcmToken,\n    notification: {\n      title: '🛵 Nuevo pedido asignado',\n      body: `Pedido #${orderId} te fue asignado`\n    },\n    android: { priority: 'high' }\n  }\n});\n\nconst fcmResponse = await new Promise((resolve, reject) => {\n  const req = https.request({\n    hostname: 'fcm.googleapis.com',\n    path: `/v1/projects/${projectId}/messages:send`,\n    method: 'POST',\n    headers: {\n      'Authorization': `Bearer ${accessToken}`,\n      'Content-Type': 'application/json',\n      'Content-Length': Buffer.byteLength(fcmBody)\n    }\n  }, (res) => {\n    let data = '';\n    res.on('data', chunk => data += chunk);\n    res.on('end', () => resolve(JSON.parse(data)));\n  });\n  req.on('error', reject);\n  req.write(fcmBody);\n  req.end();\n});\n\nreturn [{ json: { success: true, fcmResponse: fcmResponse, rider: riderName } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2368,
+        1520
+      ],
+      "id": "9e7dd148-4617-4aba-91d4-c43979566186",
+      "name": "Send FCM Push"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT fcm_token, name \nFROM delivery_riders \nWHERE id = {{ $('PG Assign Rider').first().json.rider_id }}\nAND fcm_token IS NOT NULL;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2128,
+        1520
+      ],
+      "id": "ac042429-1b28-4629-b3f6-21c38600666a",
+      "name": "PG Get FCM Token",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders SET rider_id = {{ $json.body.rider_id }}, updated_at = NOW() WHERE id = {{ $json.body.order_id }} AND ({{ $json.body.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.body.tenant_id || 'NULL' }}::bigint) AND EXISTS (SELECT 1 FROM delivery_riders r WHERE r.id = {{ $json.body.rider_id }} AND r.tenant_id = orders.tenant_id) RETURNING id, rider_id;",
+        "options": {}
+      },
+      "name": "PG Assign Rider",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1888,
+        1520
+      ],
+      "id": "f9efde15-b306-42d5-95c2-174f37d6ae3c",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/assign-rider",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "POST /dashboard/assign-rider",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        1520
+      ],
+      "id": "139c001a-55c5-45bc-814a-f92e627b493f",
+      "webhookId": "9db430a5-ea8d-4839-aff9-e836fe14619a"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, rider: $json }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Resp Modify Rider",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2592,
+        1088
+      ],
+      "id": "3ee22cf8-b2a5-4590-9b53-61e0a6be6523"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ $json.query }}",
+        "options": {}
+      },
+      "name": "PG Modify Rider",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2128,
+        1328
+      ],
+      "id": "ee0ca02c-7434-438c-be6b-0422dfbe3302",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const { action, id, name, phone, pin, is_active, tenant_id } = $json.body;\nif (tenant_id === undefined || tenant_id === null || tenant_id === '') \n{   throw new Error('Falta tenant_id: no se puede crear un domiciliario sin saber su negocio'); } \nconst tenantId = tenant_id;\n\nfunction simpleHash(pin) {\n  let hash = 0;\n  for (let i = 0; i < pin.length; i++) {\n    hash = ((hash << 5) - hash) + pin.charCodeAt(i);\n    hash |= 0;\n  }\n  return Math.abs(hash).toString(16).padStart(8, '0');\n}\n\nlet query = '';\nif (action === 'create') {\n  if (!name || !pin) throw new Error('name y pin requeridos');\n  const pinHash = simpleHash(pin.toString());\n  // Guard: el PIN debe ser único entre TODOS los negocios (login global)\n  query = `INSERT INTO delivery_riders (name, pin_hash, phone, tenant_id)\n           SELECT '${name.replace(/'/g,\"''\")}', '${pinHash}', '${(phone || '').replace(/'/g,\"''\")}', ${tenantId}\n           WHERE NOT EXISTS (SELECT 1 FROM delivery_riders WHERE pin_hash = '${pinHash}')\n           RETURNING id, name, is_active;`;\n} else if (action === 'update') {\n  if (!id) throw new Error('id requerido');\n  const setParts = [`name = '${name.replace(/'/g,\"''\")}' `, `updated_at = NOW()`];\n  if (phone !== undefined) setParts.push(`phone = '${String(phone ?? '').replace(/'/g,\"''\")}'`);\n  if (pin) {\n    const pinHash = simpleHash(pin.toString());\n    setParts.push(`pin_hash = '${pinHash}'`);\n    query = `UPDATE delivery_riders SET ${setParts.join(', ')}\n             WHERE id = ${id} AND tenant_id = ${tenantId}\n               AND NOT EXISTS (SELECT 1 FROM delivery_riders WHERE pin_hash = '${pinHash}' AND id <> ${id})\n             RETURNING id, name, is_active;`;\n  } else {\n    query = `UPDATE delivery_riders SET ${setParts.join(', ')} WHERE id = ${id} AND tenant_id = ${tenantId} RETURNING id, name, is_active;`;\n  }\n} else if (action === 'toggle') {\n  if (!id) throw new Error('id requerido');\n  query = `UPDATE delivery_riders SET is_active = ${is_active}, updated_at = NOW() WHERE id = ${id} AND tenant_id = ${tenantId} RETURNING id, name, is_active;`;\n} else if (action === 'delete') {\n  if (!id) throw new Error('id requerido');\n  query = `DELETE FROM delivery_riders WHERE id = ${id} AND tenant_id = ${tenantId} RETURNING id;`;\n} else {\n  throw new Error('action inválida');\n}\n\nreturn [{ json: { query } }];"
+      },
+      "name": "Code Format Rider",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1888,
+        1328
+      ],
+      "id": "a99cbcd6-ace1-47d5-ba47-64808c9b2819"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/riders",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "POST /dashboard/riders",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        1328
+      ],
+      "id": "92993b61-9ffa-4fac-88b7-20361459801b",
+      "webhookId": "31df89bc-3f21-4414-bffa-c0fd2ad5e296"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $input.all().length > 0 ? JSON.stringify($input.all().map(i => i.json)) : '[]' }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Resp Get Riders",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2128,
+        1120
+      ],
+      "id": "1c186d0d-1760-4014-b0d6-47c8039ec4a3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT r.id, r.name, r.phone, r.is_active, r.created_at, r.last_lat, r.last_lng, r.last_seen_at, COUNT(o.id) FILTER (WHERE o.status = 'delivering')::int as active_orders, COUNT(o.id) FILTER (WHERE o.status = 'delivered' AND o.updated_at > NOW() - INTERVAL '24 hours')::int as total_delivered FROM delivery_riders r LEFT JOIN orders o ON o.rider_id = r.id AND o.tenant_id = r.tenant_id WHERE ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR r.tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint) GROUP BY r.id ORDER BY r.is_active DESC, r.name ASC;",
+        "options": {}
+      },
+      "name": "PG Get Riders",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1888,
+        1120
+      ],
+      "id": "27fe3c45-bb5e-42c9-a7a7-ad021f52d0dd",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard/riders",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "GET /dashboard/riders",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        1120
+      ],
+      "id": "f5d1ac13-9c4d-4442-a26a-a2cacb7774ee",
+      "webhookId": "b7214899-e55b-4bf3-bec2-f3bcb29cb32e"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.all().map(i => i.json)) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        464,
+        1600
+      ],
+      "id": "94b0fb61-7910-44cb-9ca5-7d30d7a3457a",
+      "name": "Responder Historial Promos"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, promo_title as title, promo_description as description, total_recipients as sent_count, sent_at FROM promo_history WHERE ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint) ORDER BY sent_at DESC LIMIT 20;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        1600
+      ],
+      "id": "30ab3096-d845-4d39-93ee-d5344b31a0a0",
+      "name": "Consultar Historial Promos",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard/promo-history",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        1600
+      ],
+      "id": "e23123f1-14a1-4914-bd52-d52afc51b493",
+      "name": "GET Promo History",
+      "webhookId": "8ab22237-7d0f-41b4-a765-1c05fa83c0fe"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: \"Promoción enviada\", sent_count: $('Obtener Suscriptores Activos').all().length }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1008,
+        1248
+      ],
+      "id": "538ed0f5-a050-433f-8d7f-89d0a7c14c4f",
+      "name": "Responder Envío Promo"
+    },
+    {
+      "parameters": {
+        "phoneNumberId": "={{ $('POST Enviar Promo').first().json.body.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $json.phone_number }}",
+        "template": "={{ $('POST Enviar Promo').first().json.body.template || 'promocion_informativa_Restaurante Demo|es_CO' }}",
+        "components": {
+          "component": [
+            {
+              "bodyParameters": {
+                "parameter": [
+                  {
+                    "text": "={{ $('POST Enviar Promo').first().json.body.title }}"
+                  },
+                  {
+                    "text": "={{ $('POST Enviar Promo').first().json.body.description }}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        1376
+      ],
+      "id": "9a0c4894-0eb6-4ef1-b69f-29a85b34f0f7",
+      "name": "Send template",
+      "webhookId": "6a8ae1d4-ceb9-4f23-a764-d191c851ef01",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO promo_history (promo_title, promo_description, total_recipients, sent_at, tenant_id)\nSELECT \n  '{{ $('POST Enviar Promo').first().json.body.title }}',\n  '{{ $('POST Enviar Promo').first().json.body.description }}',\n  {{ $('Obtener Suscriptores Activos').all().length }},\n  NOW(),\n  {{ $('POST Enviar Promo').first().json.body.tenant_id || 'NULL' }}::bigint\nWHERE NOT EXISTS (\n  SELECT 1 FROM promo_history \n  WHERE promo_title = '{{ $('POST Enviar Promo').first().json.body.title }}'\n  AND sent_at > NOW() - INTERVAL '1 minute'\n  AND tenant_id = {{ $('POST Enviar Promo').first().json.body.tenant_id || 'NULL' }}::bigint\n);\n\nUPDATE promo_subscribers\nSET last_promo_sent_at = NOW(),\n    total_promos_received = COALESCE(total_promos_received,0) + 1\nWHERE is_active = true\n  AND tenant_id = {{ $('POST Enviar Promo').first().json.body.tenant_id || 'NULL' }}::bigint;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        768,
+        1248
+      ],
+      "id": "a72bcdc0-7cba-4f1d-8019-56739767fed5",
+      "name": "Registrar Promo en Historial",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        512,
+        1328
+      ],
+      "id": "cf11a352-00ab-498e-9368-2eb09e08d388",
+      "name": "Enviar en Lotes"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT phone_number, customer_name FROM promo_subscribers WHERE is_active = true AND ({{ $('POST Enviar Promo').first().json.body.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $('POST Enviar Promo').first().json.body.tenant_id || 'NULL' }}::bigint) ORDER BY opted_in_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        1328
+      ],
+      "id": "15df622a-2ff5-483c-a89b-37dc54ce09a2",
+      "name": "Obtener Suscriptores Activos",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/send-promo",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        1328
+      ],
+      "id": "133106e5-764a-4983-9244-dce8fd09c15b",
+      "name": "POST Enviar Promo",
+      "webhookId": "070930ad-f2c4-474f-a290-def93d37bf36"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.all().map(i => i.json)) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "=*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "=GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "=Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        512,
+        1120
+      ],
+      "id": "d8b75a8c-764f-48cc-8412-f34eff8fd2f3",
+      "name": "Responder Suscriptores"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT phone_number, customer_name, opted_in_at FROM promo_subscribers WHERE is_active = true AND ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint) ORDER BY opted_in_at DESC;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        272,
+        1120
+      ],
+      "id": "6b5c53f1-6a9d-4cec-885b-14823b30b4e3",
+      "name": "Contar Suscriptores",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard/promo-subscribers",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        1120
+      ],
+      "id": "a9fa3c34-2a4b-496e-9edb-676d9de5f920",
+      "name": "GET Promo Subscribers",
+      "webhookId": "aac4cdb2-06ab-499a-8969-0fdb08929ab5"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: $('Ejecutar Avance').item.json.success, order_id: $('Ejecutar Avance').item.json.order_id, old_status: $('Ejecutar Avance').item.json.old_status, new_status: $('Ejecutar Avance').item.json.new_status, customer_phone: $('Ejecutar Avance').item.json.customer_phone }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "0819ace9-2e76-4000-91e2-04b78da0b4e3",
+      "name": "Responder Avance",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        3536,
+        784
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/{{ $('POST Avanzar Pedido').first().json.body.phone_number_id }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\nJSON.stringify({\n  messaging_product: \"whatsapp\",\n  to: $('Guardar Datos Cliente').first().json.customer_phone,\n  type: \"interactive\",\n  interactive: {\n    type: \"button\",\n    body: {\n      text: \"🎉 ¡Gracias por tu pedido en \" + ($('POST Avanzar Pedido').first().json.body.business_name || 'Restaurante Demo - Sabor Auténtico') + \"!\\n\\n¿Te gustaría recibir información sobre promociones y descuentos exclusivos por WhatsApp?\"\n    },\n    action: {\n      buttons: [\n        { type: \"reply\", reply: { id: \"optin_yes\", title: \"Sí, me interesa! ✅\" } },\n        { type: \"reply\", reply: { id: \"optin_no\", title: \"No, gracias 🙏\" } }\n      ]\n    }\n  }\n})\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4336,
+        672
+      ],
+      "id": "17428f04-0a8b-4cbb-affe-6f6bf05ebb30",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "xi1Ygeqv6deFhoo2",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4160,
+        672
+      ],
+      "id": "202f3a0f-6ad6-4648-9c43-ef15802a5e63",
+      "name": "Esperar para Opt-in",
+      "webhookId": "bd1c7bdc-20f8-48c6-a3a4-8cca7b3b37b5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "54d07f9c-f9d6-439f-a3be-04b0e081c7f3",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "si",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3904,
+        688
+      ],
+      "id": "243dbe57-2d49-40db-bf42-052648d219e9",
+      "name": "¿Ya está suscrito?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH c AS (\n  SELECT '{{ $json.customer_phone }}'::text AS phone,\n         {{ $('POST Avanzar Pedido').first().json.body.tenant_id || 'NULL' }}::bigint AS tenant\n),\ns AS (\n  SELECT is_active\n  FROM promo_subscribers\n  WHERE phone_number = (SELECT phone FROM c)\n    AND tenant_id = (SELECT tenant FROM c)\n  LIMIT 1\n)\nSELECT\n  CASE WHEN COALESCE((SELECT is_active FROM s), false) THEN 'si' ELSE 'no' END AS ya_suscrito,\n  CASE WHEN COALESCE((SELECT is_active FROM s), false) THEN 'no' ELSE 'si' END AS decision;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3600,
+        560
+      ],
+      "id": "a94769e4-abcf-4a3e-af8e-b5e0429b9983",
+      "name": "Verificar Suscripción Existente",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7b31731-39e0-4725-8d93-c920bc4be740",
+              "name": "customer_phone",
+              "value": "={{ $('Ejecutar Avance').item.json.customer_phone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3376,
+        560
+      ],
+      "id": "426fe391-d710-49b6-ab24-82025e7520a7",
+      "name": "Guardar Datos Cliente"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e10095ab-d44e-41b0-9ba7-4fe4498731ec",
+              "leftValue": "={{ $('Ejecutar Avance').item.json.new_status }}",
+              "rightValue": "delivered",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3120,
+        576
+      ],
+      "id": "cae58203-b1a7-45d3-a9ec-934b9652ea93",
+      "name": "¿Es Entregado?"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('POST Avanzar Pedido').first().json.body.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $json.customer_phone }}",
+        "textBody": "={{\n  ($json.new_status === 'preparing'\n    ? '🔥 *¡Tu pedido está siendo preparado!*\\n\\nNuestro equipo ya está trabajando en tu pedido. Te avisaremos cuando esté en camino.\\n\\n_'\n  : $json.new_status === 'delivering'\n    ? '🛵 *¡Tu pedido va en camino!*\\n\\nEl domiciliario ya salió con tu pedido. ¡Prepárate para recibirlo!\\n\\n_'\n  : $json.new_status === 'delivered'\n    ? '✅ *¡Pedido entregado!*\\n\\n¡Gracias por tu compra! Esperamos que disfrutes tu comida. 🍕\\n\\n📝 ¿Nos ayudas con tu opinión? Solo toma 30 segundos:\\n' + ({1:'https://tinyurl.com/Restaurante Demo-encuesta',4:'https://docs.google.com/forms/d/e/1FAIpQLSeGf4J1m8i5Z0uNXa3Pare1F-vtTE771RHfsoP_ji_NWb7cUg/viewform'}[$('POST Avanzar Pedido').first().json.body.tenant_id] || 'https://tinyurl.com/Restaurante Demo-encuesta') + '\\n\\nTu feedback nos ayuda a mejorar cada día.\\n\\n_'\n  : $json.new_status === 'ready_pickup'\n    ? '📦 *¡Tu pedido está listo!*\\n\\nYa puedes pasar a recogerlo. ¡Te esperamos!\\n\\n_'\n  : '')\n  + ($('POST Avanzar Pedido').first().json.body.business_name || 'Restaurante')\n  + '_'\n}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        2864,
+        576
+      ],
+      "id": "1eb2342d-4a13-420a-ad1a-655d519cf2ac",
+      "name": "Notificar Estado al Cliente",
+      "webhookId": "5294d85b-110e-4e26-9e3b-fbc254fa7f65",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH upd AS (\n  SELECT fn_advance_order({{ $json.body.order_id }}, '{{ $json.body.new_status }}') AS r\n  FROM orders WHERE id = {{ $json.body.order_id }} AND ({{ $json.body.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.body.tenant_id || 'NULL' }}::bigint)\n)\nSELECT (r->>'success')::boolean AS success,\n       (r->>'order_id')::int AS order_id,\n       r->>'old_status' AS old_status,\n       r->>'new_status' AS new_status,\n       r->>'customer_phone' AS customer_phone,\n       r->>'error' AS error\nFROM upd;",
+        "options": {}
+      },
+      "id": "e65b3f2d-2c49-419a-8a99-53a56902ef37",
+      "name": "Ejecutar Avance",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        2624,
+        576
+      ],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/advance-order",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "263992ad-cc91-4685-a7ec-67c9dfe87f93",
+      "name": "POST Avanzar Pedido",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        2432,
+        576
+      ],
+      "webhookId": "dash-advance-order",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## 🚀 AVANCE DE ESTADOS + OPT-IN PROMOCIONES\n\n**POST /dashboard/advance-order**\n→ Llama `fn_advance_order()` para cambiar status\n\n**Notificaciones automáticas por estado:**\n• preparing → \"Tu pedido está siendo preparado 🔥\"\n• delivering → \"Tu pedido va en camino 🛵\"\n• delivered → \"Pedido entregado + link encuesta 📝\"\n• ready_pickup → \"Tu pedido está listo para recoger 📦\"\n\n**Si el pedido se entrega (delivered):**\n1. Guarda datos del cliente\n2. Verifica si ya está suscrito a promos\n3. Si NO está suscrito → espera 1 minuto → envía mensaje interactivo de opt-in\n4. Botones: \"Sí, me interesa! ✅\" / \"No, gracias 🙏\"\n",
+        "height": 380,
+        "width": 720,
+        "color": 6
+      },
+      "id": "b2adfd6e-b568-4774-8cfb-531c3ad72f14",
+      "name": "🚀 Nota: Avance de Estados",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2432,
+        144
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($('Ejecutar Verificación').item.json.result) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "44ed753f-986c-4346-a992-0bb5eac0f48a",
+      "name": "Responder Verificación (Rechazado)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1888,
+        960
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($('Ejecutar Verificación').item.json.result) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "f9458b1d-93ee-4eaf-9dfc-7c755ef7ef07",
+      "name": "Responder Verificación (OK)",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        1904,
+        448
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('POST Verificar Pago').first().json.body.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Ejecutar Verificación').item.json.result.customer_phone }}",
+        "textBody": "={{ '❌ *Pago no verificado*\\n\\nHola ' + $('Ejecutar Verificación').item.json.result.customer_name + ', no pudimos verificar tu pago. Por favor revisa y envía nuevamente el comprobante, o contáctanos al 300 322 9261.\\n\\n_' + ($('POST Verificar Pago').first().json.body.business_name || 'Restaurante') + '_' }}",
+        "additionalFields": {}
+      },
+      "id": "5ce2556c-1420-4a42-9e2b-78132dd141b9",
+      "name": "Notificar Cliente (Rechazado)",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        1664,
+        608
+      ],
+      "typeVersion": 1,
+      "webhookId": "1cfb9458-3d7e-4355-b0cc-84d9be660929",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('POST Verificar Pago').first().json.body.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Ejecutar Verificación').item.json.result.customer_phone }}",
+        "textBody": "={{ '✅ *¡Tu pago ha sido verificado!*\\n\\nHola ' + $('Ejecutar Verificación').item.json.result.customer_name + ', tu pago fue confirmado exitosamente.\\n\\n🍕 Tu pedido está siendo preparado. ¡Gracias por tu compra!\\n\\n_' + ($('POST Verificar Pago').first().json.body.business_name || 'Restaurante') + '_' }}",
+        "additionalFields": {}
+      },
+      "id": "e3b1150e-0713-4e4f-802a-e1874eeea0af",
+      "name": "Notificar Cliente (Aprobado)",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        1664,
+        448
+      ],
+      "typeVersion": 1,
+      "webhookId": "85c17d04-c5c1-40ae-a9be-50dcee219bf2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "chk-success",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ ($('POST Verificar Pago').first().json.body.action || 'approved') === 'approved' }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "686ca1ca-6e22-487b-9b31-77143e414463",
+      "name": "¿Pago Aprobado?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        1424,
+        528
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT fn_verify_payment({{ $json.body.order_id }}, '{{ $json.body.verified_by }}', '{{ $json.body.action || 'approved' }}', {{ $json.body.notes ? \"'\" + $json.body.notes.replace(/'/g, \"''\") + \"'\" : 'NULL' }}) as result FROM orders WHERE id = {{ $json.body.order_id }} AND ({{ $json.body.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.body.tenant_id || 'NULL' }}::bigint);",
+        "options": {}
+      },
+      "id": "87a4d8d9-6bf2-46a6-a03b-bb0647d2a857",
+      "name": "Ejecutar Verificación",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        1184,
+        528
+      ],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/verify-payment",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "72c4bd95-2ea4-45e2-91c3-4990211a38e3",
+      "name": "POST Verificar Pago",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        944,
+        528
+      ],
+      "webhookId": "dash-verify-payment",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## 💰 VERIFICACIÓN DE PAGOS\n\n**POST /dashboard/verify-payment**\n→ Llama a la función PostgreSQL `fn_verify_payment()`\n→ Parámetros: order_id, verified_by, action (approved/rejected), notes\n\n**Flujo condicional:**\n• Si success=true Y new_status=confirmed → WhatsApp de aprobación ✅\n• Si no → WhatsApp de rechazo ❌\n\n**Notificaciones WA:**\n• Aprobado: \"Tu pago ha sido verificado! Tu pedido está siendo preparado\"\n• Rechazado: \"No pudimos verificar tu pago. Reenvía el comprobante\"\n",
+        "height": 340,
+        "width": 620,
+        "color": 5
+      },
+      "id": "d522d4da-1c88-4466-b967-f7c7557a4680",
+      "name": "💰 Nota: Pagos",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        960,
+        176
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "8a16ffe5-8ad6-4d29-8e43-0c0c246ca193",
+      "name": "Responder Pedido Creado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        512,
+        720
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO orders (customer_name, customer_phone, order_type, products, total, shipping_cost, delivery_address, latitude, longitude, payment_method, status, tenant_id)\nSELECT '{{ $json.body.customer_name }}', \n       '{{ $json.body.customer_phone && !$json.body.customer_phone.toString().startsWith(\"57\") ? \"57\" + $json.body.customer_phone : $json.body.customer_phone }}', \n       '{{ $json.body.order_type || 'Domicilio' }}', \n       '{{ JSON.stringify($json.body.products || []) }}'::jsonb, \n       {{ $json.body.total || 0 }}, \n       {{ $json.body.shipping_cost || 0 }}, \n       {{ $json.body.delivery_address ? \"'\" + $json.body.delivery_address.replace(/'/g, \"''\") + \"'\" : 'NULL' }}, \n       {{ $json.body.latitude || 'NULL' }}, \n       {{ $json.body.longitude || 'NULL' }}, \n       '{{ $json.body.payment_method || 'Efectivo' }}', \n       '{{ $json.body.payment_method === 'Efectivo' ? 'confirmed' : 'awaiting_verification' }}',\n       {{ $json.body.tenant_id || 'NULL' }}::bigint\nWHERE NOT EXISTS (\n  SELECT 1 FROM orders \n  WHERE customer_phone = '{{ $json.body.customer_phone && !$json.body.customer_phone.toString().startsWith(\"57\") ? \"57\" + $json.body.customer_phone : $json.body.customer_phone }}'\n  AND created_at > NOW() - INTERVAL '3 minutes'\n  AND status NOT IN ('delivered', 'cancelled')\n  AND tenant_id = {{ $json.body.tenant_id || 'NULL' }}::bigint\n)\nRETURNING *;",
+        "options": {}
+      },
+      "id": "10ba6992-4f3f-4852-ab23-fd755d7c8b25",
+      "name": "Insertar Pedido",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        272,
+        720
+      ],
+      "typeVersion": 2.5,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dashboard/create-order",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "f334b791-8cfb-46ec-86df-91cf2716f230",
+      "name": "POST Crear Pedido",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        32,
+        720
+      ],
+      "webhookId": "dash-create-order",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.all().map(i => i.json).filter(i => i.id != null)) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              }
+            ]
+          }
+        }
+      },
+      "id": "86657de3-d0d5-4246-99aa-512257d851d7",
+      "name": "Responder Pedidos",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        512,
+        528
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM v_dashboard_orders WHERE ({{ $json.query.tenant_id || 'NULL' }}::bigint IS NULL OR tenant_id = {{ $json.query.tenant_id || 'NULL' }}::bigint) AND (status NOT IN ('delivered', 'cancelled') OR created_at > NOW() - INTERVAL '24 hours') ORDER BY sort_priority ASC, created_at DESC LIMIT 50;",
+        "options": {}
+      },
+      "id": "8ce678d2-d07e-4e21-b98b-1541f248d365",
+      "name": "Consultar Pedidos",
+      "type": "n8n-nodes-base.postgres",
+      "position": [
+        272,
+        528
+      ],
+      "typeVersion": 2.5,
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "dashboard/orders",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "b70da480-cb86-413b-bd7d-d09eb24c5a14",
+      "name": "GET Pedidos",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        32,
+        528
+      ],
+      "webhookId": "dash-get-orders",
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "content": "## 📦 GESTIÓN DE PEDIDOS\n\n**GET /dashboard/orders**\n→ Lista pedidos activos (no delivered/cancelled) + últimas 24h\n→ Ordenados por prioridad y fecha descendente\n→ Límite: 50 registros\n\n**POST /dashboard/create-order**\n→ Crea pedido desde el bot de WhatsApp\n→ Auto-prefija \"57\" al teléfono si no lo tiene\n→ Si pago es Efectivo → status = confirmed, si no → pending\n→ Guarda productos como JSONB\n",
+        "height": 340,
+        "width": 560,
+        "color": 4
+      },
+      "id": "e614830c-6fc6-4c25-9ba0-ae11cc829d57",
+      "name": "📦 Nota: Pedidos",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -624,
+        528
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🖥️ Dashboard API - Pedidos Restaurante\n\n**Endpoints agrupados por funcionalidad:**\n1. 📦 Pedidos (listar, crear)\n2. 💰 Pagos (verificar, notificar)\n3. 🚀 Estados (avanzar, opt-in promos)\n4. 🎯 Promociones (subscribers, envío masivo, historial)\n5. 🛵 Admin Domiciliarios (CRUD, asignación, push FCM)\n6. 📱 App Domiciliario (login, pedidos, entregas, historial)\n7. 🔔 Manager (token FCM para notificaciones)\n\n**Credenciales:**\n• PostgreSQL: Postgres account 2\n• WhatsApp: WhatsApp account (Phone Number ID: 1004464636088971)\n\n**CORS:** Access-Control-Allow-Origin: * en todos los endpoints\n",
+        "height": 340,
+        "width": 720,
+        "color": 4
+      },
+      "id": "92cd4df3-554f-4293-a553-eb899fc42f20",
+      "name": "📋 Nota General",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rider/pickup",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "POST /rider/pickup",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        3152
+      ],
+      "id": "0ff06a66-a102-4377-978b-3d5433de5431",
+      "webhookId": "495abba5-2b90-43a0-88f5-d2e62d2ddca0"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET status = 'delivering', updated_at = NOW()\nWHERE id = {{ $json.body.order_id }}\n  AND tenant_id = (SELECT tenant_id FROM delivery_riders WHERE id = {{ $json.body.rider_id }})\nRETURNING id, status, customer_phone, customer_name, tenant_id;",
+        "options": {}
+      },
+      "name": "PG Marcar En Camino",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        128,
+        3152
+      ],
+      "id": "a288e234-61e0-4afb-9b83-2751627ead79",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resuelve el número de WhatsApp y el nombre del negocio según el tenant del pedido.\n// Mantener al día al crear negocios (igual que INBOX_MAP del relay).\nconst TENANTS = {\n  1: { phone_number_id: '1004464636088971', name: 'Restaurante Demo - Sabor Auténtico' },\n  3: { phone_number_id: '1095993256941270', name: 'Talos Sentinel' },\n  4: { phone_number_id: '1004464636088971', name: 'Restaurante Demo' },\n};\nconst o = $input.first().json;\nconst t = TENANTS[o.tenant_id] || {};\nreturn [{ json: { ...o, phone_number_id: t.phone_number_id || '1004464636088971', business_name: t.name || 'Restaurante' } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        3152
+      ],
+      "id": "f90bdfe0-5c52-48a6-baf8-2a041464be6d",
+      "name": "Resolver Negocio Rider"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $json.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $json.customer_phone }}",
+        "textBody": "={{ '🛵 *¡Tu pedido va en camino!*\\n\\nEl domiciliario ya salió con tu pedido. ¡Prepárate para recibirlo!\\n\\n_' + $json.business_name + '_' }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        3152
+      ],
+      "id": "1b89f45c-c03c-4446-8870-3ad175eb2fde",
+      "name": "Notificar Cliente En Camino",
+      "webhookId": "ba2f4116-5f97-4b9a-b8c4-be74a99b5855",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        752,
+        3152
+      ],
+      "id": "8cb204d3-368e-4c04-b87b-c322a81d526b",
+      "name": "Resp Pickup"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rider/respond",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -128,
+        3376
+      ],
+      "id": "29c9d0f2-9d28-4efb-b27f-b383f2d1b42d",
+      "name": "POST /rider/respond",
+      "webhookId": "07ddce4f-5d18-4584-a964-4ceb77556eb4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE orders\nSET rider_accepted_at = CASE WHEN '{{ $json.body.action }}' = 'accept' THEN NOW() ELSE NULL END,\n    rider_id          = CASE WHEN '{{ $json.body.action }}' = 'accept' THEN rider_id ELSE NULL END,\n    updated_at        = NOW()\nWHERE id = {{ $json.body.order_id }}\n  AND rider_id = {{ $json.body.rider_id }}\n  AND tenant_id = (SELECT tenant_id FROM delivery_riders WHERE id = {{ $json.body.rider_id }})\nRETURNING id, status, rider_id, rider_accepted_at;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        80,
+        3376
+      ],
+      "id": "8c5f8043-e40e-4545-921e-6d0736f798da",
+      "name": "PG Responder Pedido",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        288,
+        3376
+      ],
+      "id": "c9e07b6c-9fd8-4a48-b792-4129af4ba2f0",
+      "name": "Resp Responder"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE bot_sessions\nSET state = 'done', followups_sent = 2, updated_at = NOW()\nWHERE phone = '{{ $json.customer_phone }}'\nRETURNING phone, state;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        592,
+        2496
+      ],
+      "id": "8b771612-3c74-4d51-acf6-34765aeda100",
+      "name": "Marcar Sesión Entregada",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Token del domiciliario ───────────────────\n// Se firma con HMAC-SHA256 usando el MISMO secreto que tiene el proxy del panel.\n// El proxy verifica esta firma y compara el rider_id: así un tercero no puede\n// actuar en nombre de un domiciliario aunque conozca su id.\nconst crypto = require('crypto');\n\nconst SECRETO = $env.RIDER_TOKEN_SECRET ||\n  'TU_SECRETO_RIDER';\nconst DIAS = 30;\n\nconst r = $json; // fila de delivery_riders: { id, name, is_active, tenant_id }\nconst payload = {\n  r: Number(r.id),\n  t: Number(r.tenant_id),\n  exp: Math.floor(Date.now() / 1000) + DIAS * 24 * 60 * 60,\n};\nconst cuerpo = Buffer.from(JSON.stringify(payload)).toString('base64url');\nconst firma = crypto.createHmac('sha256', SECRETO).update(cuerpo).digest('base64url');\n\nreturn [{ json: { ...r, token: `${cuerpo}.${firma}` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        976,
+        1728
+      ],
+      "id": "ec32e9ef-2494-42a9-a83b-f36797df4ba2",
+      "name": "Generar Token Rider"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Consultar Entregas Novedades": {
+      "main": [
+        [
+          {
+            "node": "Resp Entregas Novedades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Entregas Novedades": {
+      "main": [
+        [
+          {
+            "node": "Consultar Entregas Novedades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bajar Suscriptor": {
+      "main": [
+        [
+          {
+            "node": "Resp Baja Suscriptor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Baja Suscriptor": {
+      "main": [
+        [
+          {
+            "node": "Bajar Suscriptor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Borrar Promo Historial": {
+      "main": [
+        [
+          {
+            "node": "Resp Borrar Promo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /dashboard/promo-history/delete": {
+      "main": [
+        [
+          {
+            "node": "Borrar Promo Historial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Ubicacion": {
+      "main": [
+        [
+          {
+            "node": "Resp Ubicacion Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Ubicacion Rider": {
+      "main": [
+        [
+          {
+            "node": "Guardar Ubicacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Rider Guardado?": {
+      "main": [
+        [
+          {
+            "node": "Resp Modify Rider",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resp PIN Duplicado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar Negocios Rider": {
+      "main": [
+        [
+          {
+            "node": "Resp Negocios Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Negocios Rider": {
+      "main": [
+        [
+          {
+            "node": "Listar Negocios Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Opt-in Rider": {
+      "main": [
+        [
+          {
+            "node": "HTTP Opt-in Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Ya está suscrito? Rider": {
+      "main": [
+        [
+          {
+            "node": "Preparar Opt-in Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Suscripción Rider": {
+      "main": [
+        [
+          {
+            "node": "¿Ya está suscrito? Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Devoluciones": {
+      "main": [
+        [
+          {
+            "node": "Responder Devoluciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Devoluciones": {
+      "main": [
+        [
+          {
+            "node": "Consultar Devoluciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar Devolucion": {
+      "main": [
+        [
+          {
+            "node": "Responder Devolucion Creada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Crear Devolucion": {
+      "main": [
+        [
+          {
+            "node": "Insertar Devolucion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Insight": {
+      "main": [
+        [
+          {
+            "node": "Responder Insight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Llamar DeepSeek": {
+      "main": [
+        [
+          {
+            "node": "Extraer Insight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Prompt Insight": {
+      "main": [
+        [
+          {
+            "node": "Llamar DeepSeek",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Insight": {
+      "main": [
+        [
+          {
+            "node": "Preparar Prompt Insight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Insight": {
+      "main": [
+        [
+          {
+            "node": "Consultar Insight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Analytics": {
+      "main": [
+        [
+          {
+            "node": "Responder Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Analytics": {
+      "main": [
+        [
+          {
+            "node": "Consultar Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Adjunto Chatwoot": {
+      "main": [
+        [
+          {
+            "node": "POST_Chatwoot_Adjunto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay Adjunto?": {
+      "main": [
+        [
+          {
+            "node": "Preparar Adjunto Chatwoot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "POST_Chatwoot_Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_POST_Enviar": {
+      "main": [
+        [
+          {
+            "node": "¿Hay Adjunto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_GET_Mensajes": {
+      "main": [
+        [
+          {
+            "node": "GET_Chatwoot_Mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_GET_Conversaciones": {
+      "main": [
+        [
+          {
+            "node": "GET_Chatwoot_Conversaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Historial  Ventas": {
+      "main": [
+        [
+          {
+            "node": "Responder Historial Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Historial Ventas": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial  Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Entregado": {
+      "main": [
+        [
+          {
+            "node": "Espejo Entregado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Estado": {
+      "main": [
+        [
+          {
+            "node": "Espejo Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Rechazado": {
+      "main": [
+        [
+          {
+            "node": "Espejo Rechazado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Aprobado": {
+      "main": [
+        [
+          {
+            "node": "Espejo Aprobado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar_Token_Notificacion": {
+      "main": [
+        [
+          {
+            "node": "Recibir_Notificacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificacion_Manager": {
+      "main": [
+        [
+          {
+            "node": "Guardar_Token_Notificacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar_Token_Rider": {
+      "main": [
+        [
+          {
+            "node": "Enviar_Notificacion_Rider_Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar_a_Rider": {
+      "main": [
+        [
+          {
+            "node": "Consultar_Token_Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consulta_historial_domiciliario": {
+      "main": [
+        [
+          {
+            "node": "Responder_a_consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Historial_Domiciliario": {
+      "main": [
+        [
+          {
+            "node": "Consulta_historial_domiciliario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar_Novedad_a_Encargado": {
+      "main": [
+        [
+          {
+            "node": "Resp Save Deliver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Estado al Cliente1": {
+      "main": [
+        [
+          {
+            "node": "Verificar Suscripción Rider",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Espejo Entregado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resp Save Deliver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar_Estado": {
+      "main": [
+        [
+          {
+            "node": "Notificar Estado al Cliente1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar_Novedad_a_Encargado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Update Order Status": {
+      "main": [
+        [
+          {
+            "node": "Validar_Estado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Marcar Sesión Entregada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Save Deliver": {
+      "main": [
+        [
+          {
+            "node": "PG Update Order Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /rider/deliver": {
+      "main": [
+        [
+          {
+            "node": "PG Save Deliver",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Get Orders": {
+      "main": [
+        [
+          {
+            "node": "Resp Get Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /rider/orders": {
+      "main": [
+        [
+          {
+            "node": "PG Get Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Login Valid": {
+      "main": [
+        [
+          {
+            "node": "Generar Token Rider",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resp Login Fail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Check Login": {
+      "main": [
+        [
+          {
+            "node": "IF Login Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Hash Login": {
+      "main": [
+        [
+          {
+            "node": "PG Check Login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /rider/login": {
+      "main": [
+        [
+          {
+            "node": "Code Hash Login",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send FCM Push": {
+      "main": [
+        [
+          {
+            "node": "Resp Assign Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Get FCM Token": {
+      "main": [
+        [
+          {
+            "node": "Send FCM Push",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Assign Rider": {
+      "main": [
+        [
+          {
+            "node": "PG Get FCM Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /dashboard/assign-rider": {
+      "main": [
+        [
+          {
+            "node": "PG Assign Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Modify Rider": {
+      "main": [
+        [
+          {
+            "node": "¿Rider Guardado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Format Rider": {
+      "main": [
+        [
+          {
+            "node": "PG Modify Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /dashboard/riders": {
+      "main": [
+        [
+          {
+            "node": "Code Format Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Get Riders": {
+      "main": [
+        [
+          {
+            "node": "Resp Get Riders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /dashboard/riders": {
+      "main": [
+        [
+          {
+            "node": "PG Get Riders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Historial Promos": {
+      "main": [
+        [
+          {
+            "node": "Responder Historial Promos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Promo History": {
+      "main": [
+        [
+          {
+            "node": "Consultar Historial Promos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send template": {
+      "main": [
+        [
+          {
+            "node": "Enviar en Lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar Promo en Historial": {
+      "main": [
+        [
+          {
+            "node": "Responder Envío Promo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar en Lotes": {
+      "main": [
+        [
+          {
+            "node": "Registrar Promo en Historial",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Suscriptores Activos": {
+      "main": [
+        [
+          {
+            "node": "Enviar en Lotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Enviar Promo": {
+      "main": [
+        [
+          {
+            "node": "Obtener Suscriptores Activos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contar Suscriptores": {
+      "main": [
+        [
+          {
+            "node": "Responder Suscriptores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Promo Subscribers": {
+      "main": [
+        [
+          {
+            "node": "Contar Suscriptores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar para Opt-in": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Ya está suscrito?": {
+      "main": [
+        [
+          {
+            "node": "Esperar para Opt-in",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Avance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Suscripción Existente": {
+      "main": [
+        [
+          {
+            "node": "¿Ya está suscrito?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Datos Cliente": {
+      "main": [
+        [
+          {
+            "node": "Verificar Suscripción Existente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es Entregado?": {
+      "main": [
+        [
+          {
+            "node": "Responder Avance",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Guardar Datos Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Avance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Estado al Cliente": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Estado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "¿Es Entregado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejecutar Avance": {
+      "main": [
+        [
+          {
+            "node": "Notificar Estado al Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Avanzar Pedido": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar Avance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Cliente (Rechazado)": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Rechazado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Responder Verificación (Rechazado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Cliente (Aprobado)": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Aprobado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Responder Verificación (OK)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Pago Aprobado?": {
+      "main": [
+        [
+          {
+            "node": "Notificar Cliente (Aprobado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notificar Cliente (Rechazado)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ejecutar Verificación": {
+      "main": [
+        [
+          {
+            "node": "¿Pago Aprobado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Verificar Pago": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar Verificación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insertar Pedido": {
+      "main": [
+        [
+          {
+            "node": "Responder Pedido Creado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST Crear Pedido": {
+      "main": [
+        [
+          {
+            "node": "Insertar Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Pedidos": {
+      "main": [
+        [
+          {
+            "node": "Responder Pedidos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET Pedidos": {
+      "main": [
+        [
+          {
+            "node": "Consultar Pedidos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /rider/pickup": {
+      "main": [
+        [
+          {
+            "node": "PG Marcar En Camino",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Marcar En Camino": {
+      "main": [
+        [
+          {
+            "node": "Resolver Negocio Rider",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver Negocio Rider": {
+      "main": [
+        [
+          {
+            "node": "Notificar Cliente En Camino",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notificar Cliente En Camino": {
+      "main": [
+        [
+          {
+            "node": "Resp Pickup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "POST /rider/respond": {
+      "main": [
+        [
+          {
+            "node": "PG Responder Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PG Responder Pedido": {
+      "main": [
+        [
+          {
+            "node": "Resp Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Token Rider": {
+      "main": [
+        [
+          {
+            "node": "Resp Login OK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "versionId": "d7641583-6999-46cc-80fd-3948b61e4ac9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c75a37340830d286576bf4c2a4dd5c46fcdaa1d1c2fe22bc7b247eaaa343e16f"
+  },
+  "id": "ec1dGjGSnyPqVKaV",
+  "tags": [
+    {
+      "updatedAt": "2026-07-24T22:34:05.834Z",
+      "createdAt": "2026-07-24T22:34:05.834Z",
+      "id": "duJhHQ1PXFLeOeRh",
+      "name": "Automatizacion_Negocios"
+    }
+  ]
+}

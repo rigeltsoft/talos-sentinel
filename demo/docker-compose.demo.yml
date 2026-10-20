@@ -1,0 +1,49 @@
+# Demo local de Talos Sentinel — datos ficticios, sin credenciales reales ✅
+# Uso:  docker compose -f demo/docker-compose.demo.yml up
+# Requiere: la carpeta del panel (api/, src/, public/, package.json) en el directorio padre.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: talos
+      POSTGRES_PASSWORD: talos-demo
+      POSTGRES_DB: restaurante_menu
+    ports: ["5432:5432"]
+    volumes:
+      - ./../db/schema_postgres.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./../db/seed_demo_postgres.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U talos"]
+      interval: 5s
+      retries: 10
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root-demo
+      MYSQL_DATABASE: talos_dashboard
+      MYSQL_USER: talos
+      MYSQL_PASSWORD: talos-demo
+    ports: ["3306:3306"]
+    volumes:
+      - ./../db/seed_demo_mysql.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 10
+
+  panel:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports: ["3005:3005"]
+    volumes:
+      - ./..:/app
+      - /app/node_modules
+    environment:
+      DATABASE_URL: mysql://talos:talos-demo@mysql:3306/talos_dashboard
+      ADMIN_EMAIL: demo@talos.example
+      ADMIN_PASSWORD: demo1234
+    depends_on:
+      postgres: { condition: service_healthy }
+      mysql: { condition: service_healthy }

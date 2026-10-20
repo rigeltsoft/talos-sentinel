@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>Restaurante Demo Dashboard - Pedidos</title>
+	<link rel="icon"
+		href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍕</text></svg>">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap');
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			font-family: 'Ubuntu', 'Segoe UI', system-ui, -apple-system, sans-serif;
+		}
+
+		button {
+			font-family: inherit;
+		}
+
+		::-webkit-scrollbar {
+			width: 6px;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: #C9C4E8;
+			border-radius: 3px;
+		}
+
+		@keyframes pulse {
+
+			0%,
+			100% {
+				opacity: 1;
+			}
+
+			50% {
+				opacity: 0.7;
+			}
+		}
+
+		@keyframes urgentGlow {
+
+			0%,
+			100% {
+				box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+			}
+
+			50% {
+				box-shadow: 0 4px 24px rgba(239, 68, 68, 0.3);
+			}
+		}
+
+		@keyframes slideDown {
+			from {
+				opacity: 0;
+				max-height: 0;
+			}
+
+			to {
+				opacity: 1;
+				max-height: 600px;
+			}
+		}
+
+		@keyframes slideUp {
+			from {
+				opacity: 0;
+				transform: translateY(20px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+			}
+
+			to {
+				opacity: 1;
+			}
+		}
+
+		/* Sistema de alertas de nuevo pedido */
+		@keyframes screenFlash {
+
+			0%,
+			100% {
+				background-color: rgba(239, 68, 68, 0);
+			}
+
+			50% {
+				background-color: rgba(239, 68, 68, 0.2);
+			}
+		}
+
+		@keyframes newOrderPulse {
+
+			0%,
+			100% {
+				transform: scale(1);
+			}
+
+			50% {
+				transform: scale(1.05);
+			}
+		}
+
+		@keyframes shake {
+
+			0%,
+			100% {
+				transform: translateX(0);
+			}
+
+			10%,
+			30%,
+			50%,
+			70%,
+			90% {
+				transform: translateX(-10px);
+			}
+
+			20%,
+			40%,
+			60%,
+			80% {
+				transform: translateX(10px);
+			}
+		}
+
+		.new-order-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(239, 68, 68, 0.95);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 9999;
+			animation: screenFlash 0.5s infinite;
+		}
+
+		.new-order-card {
+			background: white;
+			padding: 60px 80px;
+			border-radius: 24px;
+			text-align: center;
+			animation: newOrderPulse 1s infinite;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+			max-width: 600px;
+		}
+
+		.new-order-icon {
+			font-size: 120px;
+			margin-bottom: 20px;
+			animation: shake 0.5s infinite;
+		}
+
+		.new-order-title {
+			font-size: 48px;
+			font-weight: 900;
+			color: #EF4444;
+			margin-bottom: 16px;
+			text-transform: uppercase;
+			letter-spacing: 2px;
+		}
+
+		.new-order-subtitle {
+			font-size: 24px;
+			color: #6B7280;
+			margin-bottom: 32px;
+		}
+
+		.dismiss-button {
+			padding: 16px 48px;
+			font-size: 18px;
+			font-weight: 700;
+			background: #EF4444;
+			color: white;
+			border: none;
+			border-radius: 12px;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.dismiss-button:hover {
+			background: #DC2626;
+			transform: scale(1.05);
+		}
+
+		/* Control de notificaciones */
+		.notification-controls {
+			display: flex;
+			gap: 8px;
+			align-items: center;
+		}
+
+		.volume-control {
+			position: relative;
+		}
+
+		.volume-button {
+			padding: 8px 12px;
+			border-radius: 8px;
+			border: 2px solid #E5E7EB;
+			background: white;
+			cursor: pointer;
+			font-size: 16px;
+			transition: all 0.2s;
+		}
+
+		.volume-button:hover {
+			background: #F3F4F6;
+		}
+
+		.volume-slider-container {
+			position: absolute;
+			bottom: calc(100% + 8px);
+			left: 50%;
+			transform: translateX(-50%);
+			background: white;
+			padding: 16px 12px;
+			border-radius: 10px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			display: none;
+			flex-direction: column;
+			align-items: center;
+			gap: 8px;
+			white-space: nowrap;
+		}
+
+		.volume-control:hover .volume-slider-container {
+			display: flex;
+		}
+
+		.volume-slider {
+			width: 100px;
+			height: 4px;
+			-webkit-appearance: none;
+			appearance: none;
+			background: #E5E7EB;
+			border-radius: 2px;
+			outline: none;
+		}
+
+		.volume-slider::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			appearance: none;
+			width: 16px;
+			height: 16px;
+			background: #2A2185;
+			border-radius: 50%;
+			cursor: pointer;
+		}
+
+		.volume-slider::-moz-range-thumb {
+			width: 16px;
+			height: 16px;
+			background: #2A2185;
+			border-radius: 50%;
+			cursor: pointer;
+			border: none;
+		}
+
+		/* Estilos para gráfica */
+		.chart-container {
+			background: white;
+			border-radius: 20px;
+			padding: 24px;
+			border: 1px solid #E5E7EB;
+			box-shadow: 0 7px 25px rgba(0, 0, 0, 0.08);
+			margin: 20px 0;
+		}
+
+		.chart-bars {
+			display: flex;
+			align-items: flex-end;
+			gap: 8px;
+			height: 200px;
+			margin-top: 20px;
+		}
+
+		.chart-bar {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: flex-end;
+			position: relative;
+			cursor: pointer;
+		}
+
+		.chart-bar-fill {
+			width: 100%;
+			background: linear-gradient(180deg, #2A2185 0%, #221A78 100%);
+			border-radius: 6px 6px 0 0;
+			transition: all 0.3s;
+			position: relative;
+		}
+
+		.chart-bar-fill:hover {
+			background: linear-gradient(180deg, #221A78 0%, #1A1560 100%);
+		}
+
+		.chart-bar-label {
+			font-size: 10px;
+			color: #6B7280;
+			margin-top: 6px;
+			font-weight: 600;
+		}
+
+		.chart-tooltip {
+			position: absolute;
+			bottom: 100%;
+			left: 50%;
+			transform: translateX(-50%);
+			background: #111827;
+			color: white;
+			padding: 8px 12px;
+			border-radius: 8px;
+			font-size: 11px;
+			white-space: nowrap;
+			margin-bottom: 8px;
+			opacity: 0;
+			transition: opacity 0.2s;
+			pointer-events: none;
+			z-index: 10;
+		}
+
+		.chart-bar:hover .chart-tooltip {
+			opacity: 1;
+		}
+
+		/* Estilos para tabla de productos */
+		.products-table {
+			width: 100%;
+			border-collapse: collapse;
+		}
+
+		.products-table th {
+			background: #F9FAFB;
+			padding: 12px;
+			text-align: left;
+			font-size: 11px;
+			color: #6B7280;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			border-bottom: 2px solid #E5E7EB;
+		}
+
+		.products-table td {
+			padding: 14px 12px;
+			border-bottom: 1px solid #F3F4F6;
+			font-size: 13px;
+		}
+
+		.products-table tr:hover {
+			background: #F9FAFB;
+		}
+
+		.category-badge {
+			display: inline-block;
+			padding: 4px 10px;
+			border-radius: 12px;
+			font-size: 10px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+		}
+
+		/* ── Global polish ── */
+		html {
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+		}
+
+		body {
+			background: #F5F6FA;
+		}
+
+		::-webkit-scrollbar {
+			width: 4px;
+			height: 4px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: #C9C4E8;
+			border-radius: 4px;
+		}
+
+		/* Stat cards hover */
+		.stat-card {
+			transition: transform 0.18s ease, box-shadow 0.18s ease;
+		}
+
+		.stat-card:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10) !important;
+		}
+
+		/* Filter bar sin scrollbar visible */
+		.filter-bar {
+			scrollbar-width: none;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.filter-bar::-webkit-scrollbar {
+			display: none;
+		}
+
+		/* Nav tabs active indicator */
+		.nav-tab {
+			position: relative;
+			transition: color 0.2s;
+		}
+
+		/* ── Mobile (iPhone 430px) ── */
+		@media (max-width: 500px) {
+			.stat-grid {
+				grid-template-columns: repeat(2, 1fr) !important;
+				gap: 10px !important;
+			}
+
+			.header-wrap {
+				padding: 10px 14px !important;
+			}
+
+			.header-nav {
+				margin-top: 8px !important;
+			}
+
+			.nav-tab {
+				padding: 8px 11px !important;
+				font-size: 11px !important;
+			}
+
+			.main-area {
+				padding: 14px 12px 80px !important;
+			}
+
+			.filter-bar {
+				gap: 6px !important;
+			}
+
+			.order-card-wrap {
+				padding: 12px 14px !important;
+			}
+
+			.notif-controls {
+				gap: 4px !important;
+			}
+
+			.volume-button {
+				padding: 7px 10px !important;
+				font-size: 14px !important;
+			}
+		}
+
+		  /* ============================================
+          * Hover de fila respetando botones
+          * ============================================ */
+		.order-table tbody tr {
+			transition: all 0.15s ease;
+		}
+
+		.order-table tbody tr:hover {
+			background-color: rgba(37, 99, 235, 0.06) !important;
+			box-shadow: inset 3px 0 0 #2563eb;
+		}
+
+		.order-table tbody tr:hover .action-btn {
+			position: relative;
+			z-index: 2;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		}
+
+		.btn-danger {
+			background-color: #dc2626;
+			color: white;
+			border: 1px solid #b91c1c;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+		}
+
+		.btn-primary {
+			background-color: #2563eb;
+			color: white;
+			border: 1px solid #1d4ed8;
+			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+		}
+	</style>
+</head>
+
+<body>
+	<div id="root"></div>
+	<script type="text/babel">
+		const { useState, useEffect, useCallback, useMemo, useRef } = React;
+
+		// ╔══════════════════════════════════════════════════════════════════╗
+		// ║  🔧 CONFIGURACIÓN DEL RESTAURANTE — EDITAR AQUÍ PARA REVENTA  ║
+		// ╚══════════════════════════════════════════════════════════════════╝
+		const RESTAURANT_CONFIG = {
+			name: "Restaurante Demo",
+			// Multi-negocio: TODA llamada al backend debe identificar el negocio (ver PENDIENTES_APLICAR §14/§15)
+			tenantId: 1,
+			fullName: "Restaurante Restaurante Demo - Sabor Auténtico",
+			icon: "🍕",
+			tagline: "Gestión de pedidos",
+			apiBase: "/api/n8n", // proxy del panel: exige sesión y no expone n8n
+			refreshInterval: 15000, // 15 segundos
+			currency: "COP",
+			locale: "es-CO",
+			timezone: "America/Bogota",
+			// Configuración de notificaciones
+			notifications: {
+				enabled: true,
+				soundVolume: 0.8, // 0.0 a 1.0
+				voiceEnabled: true,
+				browserNotifications: true,
+				visualAlert: true,
+				alertDuration: 5000, // 5 segundos
+			},
+			paymentMethods: {
+				Efectivo: "💵",
+				Nequi: "📱",
+				Daviplata: "📱",
+				Transferencia: "🏦",
+			},
+			orderTypeIcons: {
+				Domicilio: "🛵",
+				Recoger: "🏪",
+			},
+			// Categorías para analytics
+			productCategories: {
+				"Pizzas": { color: "#EF4444", bg: "#FEE2E2" },
+				"Hamburguesas": { color: "#F59E0B", bg: "#FEF3C7" },
+				"Perros Calientes": { color: "#10B981", bg: "#D1FAE5" },
+				"Patacones": { color: "#2A2185", bg: "#ECEAFD" },
+				"Bebidas": { color: "#8B5CF6", bg: "#EDE9FE" },
+				"Otros": { color: "#6B7280", bg: "#F3F4F6" },
+			},
+			demoOrders: [
+				{ id: 1, customer_name: "Carlos Pérez", customer_phone: "573000000000", order_type: "Domicilio", products: [{ nombre: "Pizza Hawaiana Familiar", precio: 42000 }, { nombre: "Coca-Cola 1.5L", precio: 7000 }], total: 49000, shipping_cost: 5000, delivery_address: "Calle 45 #12-30, Barrio Centro", payment_method: "Nequi", status: "delivered", created_at: new Date(Date.now() - 2 * 24 * 60 * 60000).toISOString(), updated_at: new Date().toISOString() },
+				{ id: 2, customer_name: "María López", customer_phone: "573000000000", order_type: "Recoger", products: [{ nombre: "Señor Restaurante Demo Patacón Gratinado", precio: 28000 }], total: 28000, shipping_cost: 0, delivery_address: null, payment_method: "Efectivo", status: "delivered", created_at: new Date(Date.now() - 1 * 24 * 60 * 60000).toISOString(), updated_at: new Date().toISOString() },
+				{ id: 3, customer_name: "Juan Rodríguez", customer_phone: "573000000000", order_type: "Domicilio", products: [{ nombre: "Hamburguesa Super Especial", precio: 23700 }, { nombre: "Salchipapa Normal", precio: 15000 }], total: 38700, shipping_cost: 5000, delivery_address: "Carrera 20 #33-15, La Victoria", payment_method: "Daviplata", status: "delivered", created_at: new Date(Date.now() - 3 * 60 * 60000).toISOString(), updated_at: new Date().toISOString() },
+			],
+		};
+
+		// ── Endpoints ──
+		const ENDPOINTS = {
+			orders: `${RESTAURANT_CONFIG.apiBase}/dashboard/orders`,
+			verify: `${RESTAURANT_CONFIG.apiBase}/dashboard/verify-payment`,
+			advance: `${RESTAURANT_CONFIG.apiBase}/dashboard/advance-order`,
+			promoSubscribers: `${RESTAURANT_CONFIG.apiBase}/dashboard/promo-subscribers`,
+			sendPromo: `${RESTAURANT_CONFIG.apiBase}/dashboard/send-promo`,
+			promoHistory: `${RESTAURANT_CONFIG.apiBase}/dashboard/promo-history`,
+			riders: `${RESTAURANT_CONFIG.apiBase}/dashboard/riders`,
+			assignRider: `${RESTAURANT_CONFIG.apiBase}/dashboard/assign-rider`,
+			salesHistory: `${RESTAURANT_CONFIG.apiBase}/dashboard/sales-history`,
+		};
+
+		// ── Multi-negocio (2026-10-11): el backend ya NO asigna un negocio por defecto.
+		// TENANT_ID = 1 porque esta página es la del negocio Restaurante Demo (RESTAURANT_CONFIG.name).
+		const TENANT_ID = RESTAURANT_CONFIG.tenantId;
+		const withTenant = (url) => url + (url.includes('?') ? '&' : '?') + 'tenant_id=' + TENANT_ID;
+		const withTenantBody = (obj) => JSON.stringify({ tenant_id: TENANT_ID, ...obj });
+
+		// ── Estados ──
+		const STATUS_CONFIG = {
+			pending: { label: "Pendiente", color: "#F59E0B", bg: "#FEF3C7", border: "#F59E0B", icon: "⏳", pulse: true },
+			awaiting_verification: { label: "Verificar Pago", color: "#EF4444", bg: "#FEE2E2", border: "#EF4444", icon: "🔴", pulse: true },
+			confirmed: { label: "Confirmado", color: "#10B981", bg: "#D1FAE5", border: "#10B981", icon: "✅", pulse: false },
+			preparing: { label: "Preparando", color: "#2A2185", bg: "#ECEAFD", border: "#2A2185", icon: "🔥", pulse: false },
+			delivering: { label: "En Camino", color: "#8B5CF6", bg: "#EDE9FE", border: "#8B5CF6", icon: "🛵", pulse: false },
+			ready_pickup: { label: "Listo", color: "#06B6D4", bg: "#CFFAFE", border: "#06B6D4", icon: "📦", pulse: false },
+			delivered: { label: "Entregado", color: "#6B7280", bg: "#F3F4F6", border: "#C9C4E8", icon: "✔", pulse: false },
+			cancelled: { label: "Cancelado", color: "#9CA3AF", bg: "#F9FAFB", border: "#E5E7EB", icon: "✖", pulse: false },
+		};
+
+		const NEXT_STATUS = { confirmed: "preparing", preparing: "delivering", delivering: "delivered", ready_pickup: "delivered" };
+
+		// ── Utilidades ──
+		// ============================================
+		// FIX: Parser defensivo para PostgreSQL DECIMAL
+		// PostgreSQL serializa DECIMAL como string en JSON
+		// ============================================
+		const safeNumber = (value) => {
+			if (value === null || value === undefined || value === '') return 0;
+			if (typeof value === 'number') return isNaN(value) ? 0 : value;
+			const clean = String(value).replace(/[$\s]/g, '').replace(/\./g, '').replace(/,/g, '.');
+			const num = parseFloat(clean);
+			return isNaN(num) ? 0 : num;
+		};
+
+		const formatCurrency = (amount) => {
+			const num = safeNumber(amount);
+			return new Intl.NumberFormat(RESTAURANT_CONFIG.locale, {
+				style: "currency",
+				currency: RESTAURANT_CONFIG.currency,
+				minimumFractionDigits: 0
+			}).format(num);
+		};
+		const timeAgo = (date) => { const mins = Math.floor((new Date() - new Date(date)) / 60000); if (mins < 1) return "Ahora"; if (mins < 60) return `${mins}min`; const hrs = Math.floor(mins / 60); if (hrs < 24) return `${hrs}h`; return `${Math.floor(hrs / 24)}d`; };
+		const formatTime = (date) => new Date(date).toLocaleTimeString(RESTAURANT_CONFIG.locale, { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: RESTAURANT_CONFIG.timezone });
+		const formatDate = (date) => new Date(date).toLocaleDateString(RESTAURANT_CONFIG.locale, { day: '2-digit', month: 'short', timeZone: RESTAURANT_CONFIG.timezone });
+
+		// Detectar categoría de producto
+		const detectCategory = (productName) => {
+			const name = productName.toLowerCase();
+			if (name.includes('pizza')) return 'Pizzas';
+			if (name.includes('hamburguesa')) return 'Hamburguesas';
+			if (name.includes('perro')) return 'Perros Calientes';
+			if (name.includes('patacón') || name.includes('niche')) return 'Patacones';
+			if (name.includes('coca') || name.includes('pepsi') || name.includes('jugo') || name.includes('agua')) return 'Bebidas';
+			return 'Otros';
+		};
+
+		// ══════════════════════════════════════════════════════════════════
+		// 🔔 SISTEMA DE NOTIFICACIONES
+		// ══════════════════════════════════════════════════════════════════
+
+		function useNotifications() {
+			const [enabled, setEnabled] = useState(RESTAURANT_CONFIG.notifications.enabled);
+			const [volume, setVolume] = useState(RESTAURANT_CONFIG.notifications.soundVolume);
+			const [voiceEnabled, setVoiceEnabled] = useState(RESTAURANT_CONFIG.notifications.voiceEnabled);
+			const audioContextRef = useRef(null);
+
+			// Pedir permisos de notificación del navegador
+			useEffect(() => {
+				if (RESTAURANT_CONFIG.notifications.browserNotifications && 'Notification' in window) {
+					if (Notification.permission === 'default') {
+						Notification.requestPermission();
+					}
+				}
+			}, []);
+
+			// Crear sonido de alerta (beep fuerte)
+			const playAlertSound = useCallback(() => {
+				if (!enabled) return;
+
+				try {
+					// Crear AudioContext si no existe
+					if (!audioContextRef.current) {
+						audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+					}
+
+					const ctx = audioContextRef.current;
+					const now = ctx.currentTime;
+
+					// Crear oscilador para el sonido
+					const oscillator = ctx.createOscillator();
+					const gainNode = ctx.createGain();
+
+					oscillator.connect(gainNode);
+					gainNode.connect(ctx.destination);
+
+					// Configurar sonido (beep agudo y fuerte)
+					oscillator.frequency.value = 1000; // 1000 Hz
+					gainNode.gain.setValueAtTime(volume, now);
+					gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+					oscillator.start(now);
+					oscillator.stop(now + 0.3);
+
+					// Repetir el beep 3 veces
+					setTimeout(() => {
+						const osc2 = ctx.createOscillator();
+						const gain2 = ctx.createGain();
+						osc2.connect(gain2);
+						gain2.connect(ctx.destination);
+						osc2.frequency.value = 1200;
+						gain2.gain.setValueAtTime(volume, ctx.currentTime);
+						gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+						osc2.start();
+						osc2.stop(ctx.currentTime + 0.3);
+					}, 400);
+
+					setTimeout(() => {
+						const osc3 = ctx.createOscillator();
+						const gain3 = ctx.createGain();
+						osc3.connect(gain3);
+						gain3.connect(ctx.destination);
+						osc3.frequency.value = 1400;
+						gain3.gain.setValueAtTime(volume, ctx.currentTime);
+						gain3.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+						osc3.start();
+						osc3.stop(ctx.currentTime + 0.3);
+					}, 800);
+				} catch (err) {
+					console.error('Error playing alert sound:', err);
+				}
+			}, [enabled, volume]);
+
+			// Voz Text-to-Speech
+			const speakAlert = useCallback((message) => {
+				if (!enabled || !voiceEnabled || !('speechSynthesis' in window)) return;
+
+				try {
+					// Cancelar cualquier voz anterior
+					window.speechSynthesis.cancel();
+
+					// Pequeña pausa para asegurar que se canceló
+					setTimeout(() => {
+						const utterance = new SpeechSynthesisUtterance(message);
+
+						// Intentar con español primero
+						utterance.lang = 'es-ES';
+						utterance.rate = 1.0;
+						utterance.pitch = 1.0; // Normalizado (era 1.3)
+						utterance.volume = Math.min(volume * 1.5, 1.0);
+
+						// Log para debugging
+						console.log('🗣 Speaking:', message, 'Volume:', utterance.volume);
+
+						utterance.onstart = () => console.log('✅ Voice started');
+						utterance.onend = () => console.log('✅ Voice finished');
+
+						// Si falla en español, intentar en inglés
+						utterance.onerror = (e) => {
+							console.warn('⚠ Voice error in Spanish:', e.error);
+
+							// Reintentar en inglés
+							window.speechSynthesis.cancel();
+							setTimeout(() => {
+								const fallbackUtterance = new SpeechSynthesisUtterance(message);
+								fallbackUtterance.lang = 'en-US';
+								fallbackUtterance.rate = 1.0;
+								fallbackUtterance.pitch = 1.0;
+								fallbackUtterance.volume = Math.min(volume * 1.5, 1.0);
+
+								console.log('🗣 Retrying in English');
+								fallbackUtterance.onstart = () => console.log('✅ Voice started (English)');
+								fallbackUtterance.onend = () => console.log('✅ Voice finished (English)');
+								fallbackUtterance.onerror = (err) => console.error('❌ Voice failed completely:', err);
+
+								window.speechSynthesis.speak(fallbackUtterance);
+							}, 200);
+						};
+
+						window.speechSynthesis.speak(utterance);
+					}, 100);
+				} catch (err) {
+					console.error('Error with speech synthesis:', err);
+				}
+			}, [enabled, voiceEnabled, volume]);
+
+			// Notificación del navegador
+			const showBrowserNotification = useCallback((title, body) => {
+				if (!enabled || !('Notification' in window)) return;
+
+				if (Notification.permission === 'granted') {
+					try {
+						new Notification(title, {
+							body,
+							icon: '/favicon.ico',
+							badge: '/favicon.ico',
+							tag: 'new-order',
+							requireInteraction: true, // No se cierra automáticamente
+							vibrate: [200, 100, 200], // Vibración en móviles
+						});
+					} catch (err) {
+						console.error('Error showing notification:', err);
+					}
+				}
+			}, [enabled]);
+
+			// Función principal: notificar nuevo pedido
+			const notifyNewOrder = useCallback((order) => {
+				if (!enabled) return;
+
+				console.log('🔔 NOTIFYING NEW ORDER:', order.id);
+
+				// Sonido de alerta
+				playAlertSound();
+
+				// Voz (esperar más tiempo para que el sonido termine)
+				setTimeout(() => {
+					// Mensaje simplificado sin símbolos problemáticos
+					const simpleMessage = `Atención. Nuevo pedido número ${order.id}. Cliente ${order.customer_name}.`;
+					speakAlert(simpleMessage);
+				}, 1500); // Aumentado de 800ms a 1500ms
+
+				// Notificación del navegador (con el mensaje completo formateado)
+				const orderTotal = safeNumber(order.total_amount || order.total);
+				const shippingCost = safeNumber(order.shipping_cost);
+				const grandTotal = orderTotal + shippingCost;
+
+				showBrowserNotification(
+					`🔔 NUEVO PEDIDO #${order.id}`,
+					`${order.customer_name} - ${formatCurrency(grandTotal)} - ${order.order_type}`
+				);
+			}, [enabled, playAlertSound, speakAlert, showBrowserNotification]);
+
+			return {
+				enabled,
+				setEnabled,
+				volume,
+				setVolume,
+				voiceEnabled,
+				setVoiceEnabled,
+				notifyNewOrder,
+				playAlertSound,
+				speakAlert,
+			};
+		}
+
+		// Componente de alerta visual
+		function NewOrderAlert({ order, onDismiss }) {
+			useEffect(() => {
+				const timer = setTimeout(onDismiss, RESTAURANT_CONFIG.notifications.alertDuration);
+				return () => clearTimeout(timer);
+			}, [onDismiss]);
+
+			const orderTotal = parseFloat(order.total_amount || order.total || 0);
+			const shipping = parseFloat(order.shipping_cost || 0);
+			const grandTotal = orderTotal + shipping;
+
+			return (
+				<div className="new-order-overlay" onClick={onDismiss}>
+					<div className="new-order-card" onClick={(e) => e.stopPropagation()}>
+						<div className="new-order-icon">🔔</div>
+						<div className="new-order-title">¡NUEVO PEDIDO!</div>
+						<div className="new-order-subtitle">
+							Pedido #{order.id}<br />
+							{order.customer_name}<br />
+							{formatCurrency(grandTotal)}
+						</div>
+						<button className="dismiss-button" onClick={onDismiss}>
+							ACEPTAR
+						</button>
+					</div>
+				</div>
+			);
+		}
+
+		// Componente de controles de notificación
+		function NotificationControls({ notifications }) {
+			const testNotification = () => {
+				// Crear un pedido de prueba
+				const testOrder = {
+					id: 999,
+					customer_name: "Cliente de Prueba",
+					customer_phone: "573000000000",
+					order_type: "Domicilio",
+					total_amount: 50000,
+					shipping_cost: 5000,
+				};
+				notifications.notifyNewOrder(testOrder);
+			};
+
+			return (
+				<div className="notification-controls">
+					{/* Botón de activar/desactivar */}
+					<button
+						className="volume-button"
+						onClick={() => notifications.setEnabled(!notifications.enabled)}
+						title={notifications.enabled ? "Desactivar notificaciones" : "Activar notificaciones"}
+						style={{ background: notifications.enabled ? '#ECEAFD' : 'white' }}
+					>
+						{notifications.enabled ? '🔔' : '🔕'}
+					</button>
+
+					{/* Control de volumen */}
+					<div className="volume-control">
+						<button className="volume-button" title="Ajustar volumen">
+							🔊
+						</button>
+						<div className="volume-slider-container">
+							<div style={{ fontSize: '10px', fontWeight: 600, color: '#6B7280', marginBottom: '4px' }}>
+								VOLUMEN: {Math.round(notifications.volume * 100)}%
+							</div>
+							<input
+								type="range"
+								min="0"
+								max="100"
+								value={notifications.volume * 100}
+								onChange={(e) => notifications.setVolume(e.target.value / 100)}
+								className="volume-slider"
+							/>
+							<button
+								onClick={() => notifications.playAlertSound()}
+								style={{
+									marginTop: '8px',
+									padding: '6px 12px',
+									fontSize: '11px',
+									background: '#2A2185',
+									color: 'white',
+									border: 'none',
+									borderRadius: '6px',
+									cursor: 'pointer',
+									fontWeight: 600,
+								}}
+							>
+								Probar Sonido
+							</button>
+						</div>
+					</div>
+
+					{/* Botón de voz */}
+					<button
+						className="volume-button"
+						onClick={() => notifications.setVoiceEnabled(!notifications.voiceEnabled)}
+						title={notifications.voiceEnabled ? "Desactivar voz" : "Activar voz"}
+						style={{ background: notifications.voiceEnabled ? '#ECEAFD' : 'white' }}
+					>
+						{notifications.voiceEnabled ? '🗣' : '🔇'}
+					</button>
+
+					{/* Botón de prueba completa */}
+					<button
+						className="volume-button"
+						onClick={testNotification}
+						title="Probar notificación completa"
+						style={{ background: '#FEF3C7', borderColor: '#F59E0B', color: '#92400E', fontWeight: 700 }}
+					>
+						🧪 PROBAR
+					</button>
+				</div>
+			);
+		}
+
+		// ── Componentes UI Base ──
+		function StatusBadge({ status }) {
+			const c = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
+			return <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: 700, color: c.color, background: c.bg, border: `1px solid ${c.border}60`, letterSpacing: "0.2px", animation: c.pulse ? "pulse 2s infinite" : "none" }}><span style={{ fontSize: "10px" }}>{c.icon}</span>{c.label}</span>;
+		}
+
+		function InfoRow({ icon, label, value }) {
+			return <div style={{ display: "flex", alignItems: "center", gap: "8px" }}><span style={{ fontSize: "15px" }}>{icon}</span><div><div style={{ fontSize: "10px", color: "#94A3B8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px" }}>{label}</div><div style={{ fontSize: "13px", color: "#1E293B", fontWeight: 600 }}>{value}</div></div></div>;
+		}
+
+		function ActionButton({ label, color, variant = "solid", onClick }) {
+			const isSolid = variant === "solid";
+			return <button onClick={onClick} style={{ padding: "9px 18px", borderRadius: "10px", border: `1.5px solid ${color}`, background: isSolid ? color : "transparent", color: isSolid ? "#FFFFFF" : color, fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap", letterSpacing: "0.1px" }} onMouseEnter={(e) => { e.target.style.transform = "translateY(-1px)"; e.target.style.boxShadow = `0 4px 14px ${color}45`; }} onMouseLeave={(e) => { e.target.style.transform = "translateY(0)"; e.target.style.boxShadow = "none"; }}>{label}</button>;
+		}
+
+		function StatCard({ icon, label, value, color }) {
+			return <div className="stat-card" style={{ background: "#FFFFFF", borderRadius: "20px", padding: "15px 16px", border: "1px solid #E2E8F0", borderTop: `3px solid ${color}`, display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 7px 25px rgba(0,0,0,0.08)", overflow: "hidden" }}>
+				<div style={{ width: "42px", height: "42px", borderRadius: "12px", background: `${color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>{icon}</div>
+				<div style={{ minWidth: 0, flex: 1 }}>
+					<div style={{ fontSize: "21px", fontWeight: 800, color: "#0F172A", lineHeight: 1.1, letterSpacing: "-0.4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</div>
+					<div style={{ fontSize: "10px", color: "#64748B", fontWeight: 700, marginTop: "4px", textTransform: "uppercase", letterSpacing: "0.6px" }}>{label}</div>
+				</div>
+			</div>;
+		}
+
+		function Toast({ message, type, onClose }) {
+			const colors = { success: "#10B981", error: "#EF4444", info: "#2A2185" };
+			useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, [onClose]);
+			return <div onClick={onClose} style={{ position: "fixed", bottom: "24px", left: "50%", transform: "translateX(-50%)", background: "#FFFFFF", border: `2px solid ${colors[type] || "#2A2185"}`, borderRadius: "12px", padding: "14px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 999, cursor: "pointer", animation: "slideUp 0.3s ease", maxWidth: "90%", fontSize: "14px", fontWeight: 500, color: "#374151" }}>{message}</div>;
+		}
+
+		function FilterTab({ label, count, active, onClick, color }) {
+			return <button onClick={onClick} style={{ padding: "8px 16px", borderRadius: "999px", border: active ? `1.5px solid ${color}` : "1.5px solid #E2E8F0", background: active ? `${color}12` : "#FFFFFF", color: active ? color : "#64748B", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", transition: "all 0.18s", boxShadow: active ? `0 0 0 3px ${color}20` : "0 1px 2px rgba(15,23,42,0.05)" }}>{label} <span style={{ background: active ? color : "#E2E8F0", color: active ? "#FFFFFF" : "#64748B", padding: "2px 7px", borderRadius: "999px", fontSize: "11px", fontWeight: 800, lineHeight: "18px" }}>{count}</span></button>;
+		}
+
+		// ══════════════════════════════════════════════════════════════════
+		// 📊 COMPONENTE ANALYTICS (sin cambios del anterior)
+		// ══════════════════════════════════════════════════════════════════
+
+		function Analytics({ orders }) {
+			const [period, setPeriod] = useState('month');
+
+			const now = new Date();
+			const startOfWeek = new Date(now);
+			startOfWeek.setDate(now.getDate() - 7);
+			const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+			const periodOrders = useMemo(() => {
+				const startDate = period === 'week' ? startOfWeek : startOfMonth;
+				return orders.filter(o => {
+					const orderDate = new Date(o.created_at);
+					return orderDate >= startDate && o.status === 'delivered';
+				});
+			}, [orders, period]);
+
+			const stats = useMemo(() => {
+				const total = periodOrders.reduce((sum, o) => {
+					return sum + safeNumber(o.total_amount || o.total) + safeNumber(o.shipping_cost);
+				}, 0);
+				const avgTicket = periodOrders.length > 0 ? total / periodOrders.length : 0;
+				const cashOrders = periodOrders.filter(o => o.payment_method === 'Efectivo').length;
+				const digitalOrders = periodOrders.filter(o => ['Nequi', 'Daviplata', 'Transferencia'].includes(o.payment_method)).length;
+
+				return { total, count: periodOrders.length, avgTicket, cashOrders, digitalOrders };
+			}, [periodOrders]);
+
+			const dailySales = useMemo(() => {
+				const salesByDay = {};
+				periodOrders.forEach(order => {
+					const day = new Date(order.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' });
+					if (!salesByDay[day]) salesByDay[day] = { total: 0, count: 0 };
+					const orderTotal = parseFloat(order.total_amount || order.total || 0);
+					const shipping = parseFloat(order.shipping_cost || 0);
+					salesByDay[day].total += orderTotal + shipping;
+					salesByDay[day].count += 1;
+				});
+				return Object.entries(salesByDay).map(([day, data]) => ({ day, ...data })).sort((a, b) => new Date(a.day) - new Date(b.day));
+			}, [periodOrders]);
+
+			const topProducts = useMemo(() => {
+				const productStats = {};
+				periodOrders.forEach(order => {
+					order.products?.forEach(product => {
+						const name = product.nombre || 'Sin nombre';
+						const category = detectCategory(name);
+						if (!productStats[name]) productStats[name] = { name, category, quantity: 0, revenue: 0 };
+						productStats[name].quantity += 1;
+						productStats[name].revenue += product.precio || 0;
+					});
+				});
+				return Object.values(productStats).sort((a, b) => b.revenue - a.revenue);
+			}, [periodOrders]);
+
+			const exportPDF = () => {
+				const { jsPDF } = window.jspdf;
+				const doc = new jsPDF();
+				const periodLabel = period === 'week' ? 'Semana' : 'Mes';
+				const dateStr = new Date().toLocaleDateString('es-CO');
+
+				doc.setFontSize(20);
+				doc.text(`${RESTAURANT_CONFIG.fullName}`, 20, 20);
+				doc.setFontSize(14);
+				doc.text(`Reporte de Ventas - ${periodLabel}`, 20, 30);
+				doc.setFontSize(10);
+				doc.text(`Generado: ${dateStr}`, 20, 38);
+
+				doc.setFontSize(12);
+				doc.text('Resumen', 20, 50);
+				doc.setFontSize(10);
+				doc.text(`Total Facturado: ${formatCurrency(stats.total)}`, 20, 60);
+				doc.text(`Pedidos: ${stats.count}`, 20, 68);
+				doc.text(`Ticket Promedio: ${formatCurrency(stats.avgTicket)}`, 20, 76);
+				doc.text(`Efectivo: ${stats.cashOrders} | Digital: ${stats.digitalOrders}`, 20, 84);
+
+				doc.setFontSize(12);
+				doc.text('Productos Más Vendidos', 20, 100);
+				doc.setFontSize(9);
+				let y = 110;
+				topProducts.slice(0, 10).forEach((product, idx) => {
+					doc.text(`${idx + 1}. ${product.name} - ${formatCurrency(product.revenue)} (${product.quantity}x)`, 20, y);
+					y += 8;
+				});
+
+				doc.save(`reporte-${period}-${dateStr}.pdf`);
+			};
+
+			const maxDailySales = Math.max(...dailySales.map(d => d.total), 1);
+
+			return (
+				<div style={{ animation: 'fadeIn 0.3s ease' }}>
+					<div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '20px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+						<div>
+							<h2 style={{ fontSize: '20px', fontWeight: 800, color: '#111827', marginBottom: '4px' }}>📊 Analytics</h2>
+							<p style={{ fontSize: '12px', color: '#6B7280' }}>Análisis de ventas y productos</p>
+						</div>
+						<div style={{ display: 'flex', gap: '8px' }}>
+							<button onClick={() => setPeriod('week')} style={{ padding: '8px 16px', borderRadius: '10px', border: period === 'week' ? '2px solid #2A2185' : '2px solid #E5E7EB', background: period === 'week' ? '#ECEAFD' : 'white', color: period === 'week' ? '#2A2185' : '#6B7280', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Última Semana</button>
+							<button onClick={() => setPeriod('month')} style={{ padding: '8px 16px', borderRadius: '10px', border: period === 'month' ? '2px solid #2A2185' : '2px solid #E5E7EB', background: period === 'month' ? '#ECEAFD' : 'white', color: period === 'month' ? '#2A2185' : '#6B7280', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Este Mes</button>
+						</div>
+					</div>
+
+					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+						<StatCard icon="💰" label="Total Facturado" value={formatCurrency(stats.total)} color="#10B981" />
+						<StatCard icon="📦" label="Pedidos" value={stats.count} color="#2A2185" />
+						<StatCard icon="🎫" label="Ticket Promedio" value={formatCurrency(stats.avgTicket)} color="#8B5CF6" />
+						<StatCard icon="💵" label="Efectivo" value={stats.cashOrders} color="#F59E0B" />
+					</div>
+
+					{dailySales.length > 0 && (
+						<div className="chart-container">
+							<h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>Ventas por Día</h3>
+							<p style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>Últimos {period === 'week' ? '7' : '30'} días</p>
+							<div className="chart-bars">
+								{dailySales.map((day, idx) => (
+									<div key={idx} className="chart-bar">
+										<div className="chart-tooltip">
+											<div style={{ fontWeight: 700, marginBottom: '4px' }}>{day.day}</div>
+											<div>{formatCurrency(day.total)}</div>
+											<div style={{ opacity: 0.8, marginTop: '2px' }}>{day.count} pedidos</div>
+										</div>
+										<div className="chart-bar-fill" style={{ height: `${(day.total / maxDailySales) * 100}%`, minHeight: '4px' }} />
+										<div className="chart-bar-label">{day.day.split(' ')[0]}</div>
+									</div>
+								))}
+							</div>
+						</div>
+					)}
+
+					<div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', marginBottom: '20px' }}>
+						<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+							<div>
+								<h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', marginBottom: '4px' }}>Productos Más Vendidos</h3>
+								<p style={{ fontSize: '12px', color: '#6B7280' }}>Ordenados por ingresos</p>
+							</div>
+							<button onClick={exportPDF} style={{ padding: '10px 20px', borderRadius: '10px', border: '2px solid #10B981', background: '#10B981', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+								📄 Exportar PDF
+							</button>
+						</div>
+
+						{topProducts.length > 0 ? (
+							<table className="products-table">
+								<thead>
+									<tr>
+										<th>#</th>
+										<th>Producto</th>
+										<th>Categoría</th>
+										<th style={{ textAlign: 'right' }}>Vendidos</th>
+										<th style={{ textAlign: 'right' }}>Ingresos</th>
+									</tr>
+								</thead>
+								<tbody>
+									{topProducts.map((product, idx) => {
+										const catConfig = RESTAURANT_CONFIG.productCategories[product.category] || RESTAURANT_CONFIG.productCategories['Otros'];
+										return (
+											<tr key={idx}>
+												<td style={{ color: '#9CA3AF', fontWeight: 700 }}>{idx + 1}</td>
+												<td style={{ fontWeight: 600, color: '#111827' }}>{product.name}</td>
+												<td>
+													<span className="category-badge" style={{ background: catConfig.bg, color: catConfig.color }}>
+														{product.category}
+													</span>
+												</td>
+												<td style={{ textAlign: 'right', fontWeight: 600 }}>{product.quantity}x</td>
+												<td style={{ textAlign: 'right', fontWeight: 700, color: '#10B981' }}>{formatCurrency(product.revenue)}</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						) : (
+							<div style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
+								<div style={{ fontSize: '32px', marginBottom: '12px' }}>📊</div>
+								<div style={{ fontWeight: 600 }}>No hay datos para este período</div>
+							</div>
+						)}
+					</div>
+				</div>
+			);
+		}
+
+		// ══════════════════════════════════════════════════════════════════
+		// 💰 COMPONENTE: VENTAS E HISTORIAL (nuevo)
+		// ══════════════════════════════════════════════════════════════════
+
+		function SalesHistory({ orders }) {
+			const [period, setPeriod] = useState('week');
+
+			const now = new Date();
+			const startOfWeek = new Date(now);
+			startOfWeek.setDate(now.getDate() - 7);
+			const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+			const historyOrders = useMemo(() => {
+				const startDate = period === 'week' ? startOfWeek : startOfMonth;
+				return orders.filter(o => {
+					const orderDate = new Date(o.created_at);
+					return orderDate >= startDate && ['delivered', 'cancelled'].includes(o.status);
+				});
+			}, [orders, period]);
+
+			const stats = useMemo(() => {
+				const delivered = historyOrders.filter(o => o.status === 'delivered');
+				const total = delivered.reduce((sum, o) => sum + safeNumber(o.total_amount || o.total) + safeNumber(o.shipping_cost), 0);
+				const avgTicket = delivered.length > 0 ? total / delivered.length : 0;
+				return {
+					total,
+					count: delivered.length,
+					cancelled: historyOrders.filter(o => o.status === 'cancelled').length,
+					avgTicket
+				};
+			}, [historyOrders]);
+
+			const exportCSV = () => {
+				const headers = ['#Pedido', 'Cliente', 'Telefono', 'Tipo', 'Productos', 'Subtotal', 'Envio', 'Total', 'Pago', 'Estado', 'Fecha'];
+				const rows = historyOrders.map(o => {
+					const products = (o.products || []).map(p => p.nombre).join('; ');
+					const subtotal = safeNumber(o.total_amount || o.total);
+					const shipping = safeNumber(o.shipping_cost);
+					return [
+						o.id, o.customer_name, o.customer_phone, o.order_type,
+						products, subtotal, shipping, subtotal + shipping,
+						o.payment_method, o.status, new Date(o.created_at).toLocaleString('es-CO')
+					].join(',');
+				});
+				const csv = [headers.join(','), ...rows].join('\n');
+				const blob = new Blob([csv], { type: 'text/csv' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `ventas-${period}-${new Date().toISOString().split('T')[0]}.csv`;
+				a.click();
+			};
+
+			return (
+				<div style={{ animation: 'fadeIn 0.3s ease' }}>
+					<div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '20px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+						<div>
+							<h2 style={{ fontSize: '20px', fontWeight: 800, color: '#111827', marginBottom: '4px' }}>💰 Ventas e Historial</h2>
+							<p style={{ fontSize: '12px', color: '#6B7280' }}>Control de ventas y pedidos históricos</p>
+						</div>
+						<div style={{ display: 'flex', gap: '8px' }}>
+							<button onClick={() => setPeriod('week')} style={{ padding: '8px 16px', borderRadius: '10px', border: period === 'week' ? '2px solid #10B981' : '2px solid #E5E7EB', background: period === 'week' ? '#ECFDF5' : 'white', color: period === 'week' ? '#10B981' : '#6B7280', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Última Semana</button>
+							<button onClick={() => setPeriod('month')} style={{ padding: '8px 16px', borderRadius: '10px', border: period === 'month' ? '2px solid #10B981' : '2px solid #E5E7EB', background: period === 'month' ? '#ECFDF5' : 'white', color: period === 'month' ? '#10B981' : '#6B7280', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Este Mes</button>
+							<button onClick={exportCSV} style={{ padding: '8px 16px', borderRadius: '10px', border: '2px solid #2A2185', background: '#2A2185', color: 'white', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>📥 CSV</button>
+						</div>
+					</div>
+
+					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+						<StatCard icon="💰" label="Total Facturado" value={formatCurrency(stats.total)} color="#10B981" />
+						<StatCard icon="📦" label="Pedidos Entregados" value={stats.count} color="#2A2185" />
+						<StatCard icon="🎫" label="Ticket Promedio" value={formatCurrency(stats.avgTicket)} color="#8B5CF6" />
+						<StatCard icon="❌" label="Cancelados" value={stats.cancelled} color="#EF4444" />
+					</div>
+
+					<div style={{ background: 'white', borderRadius: '20px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+						<table style={{ width: '100%', borderCollapse: 'collapse' }}>
+							<thead>
+								<tr style={{ background: '#F9FAFB' }}>
+									<th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>#</th>
+									<th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Cliente</th>
+									<th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Productos</th>
+									<th style={{ padding: '12px 16px', textAlign: 'right', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Total</th>
+									<th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Pago</th>
+									<th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Estado</th>
+									<th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase' }}>Fecha</th>
+								</tr>
+							</thead>
+							<tbody>
+								{historyOrders.length === 0 ? (
+									<tr>
+										<td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>
+											<div style={{ fontSize: '32px', marginBottom: '12px' }}>📊</div>
+											<div style={{ fontWeight: 600 }}>No hay pedidos en este período</div>
+										</td>
+									</tr>
+								) : (
+									historyOrders.map((order, idx) => {
+										const subtotal = safeNumber(order.total_amount || order.total);
+										const shipping = safeNumber(order.shipping_cost);
+										const total = subtotal + shipping;
+										return (
+											<tr key={order.id} style={{ borderBottom: '1px solid #F3F4F6', transition: 'background 0.15s' }}>
+												<td style={{ padding: '14px 16px', fontWeight: 700, color: '#111827' }}>#{order.id}</td>
+												<td style={{ padding: '14px 16px' }}>
+													<div style={{ fontWeight: 600, color: '#374151' }}>{order.customer_name}</div>
+													<div style={{ fontSize: '11px', color: '#9CA3AF' }}>{order.customer_phone}</div>
+												</td>
+												<td style={{ padding: '14px 16px', fontSize: '12px', color: '#6B7280', maxWidth: '200px' }}>
+													{(order.products || []).map(p => p.nombre).join(', ')}
+												</td>
+												<td style={{ padding: '14px 16px', textAlign: 'right', fontWeight: 700, color: '#111827' }}>
+													{formatCurrency(total)}
+												</td>
+												<td style={{ padding: '14px 16px' }}>
+													<span style={{ fontSize: '12px', fontWeight: 600, color: '#6B7280' }}>{order.payment_method}</span>
+												</td>
+												<td style={{ padding: '14px 16px' }}>
+													<StatusBadge status={order.status} />
+												</td>
+												<td style={{ padding: '14px 16px', fontSize: '12px', color: '#6B7280' }}>
+													{formatDate(order.created_at)} {formatTime(order.created_at)}
+												</td>
+											</tr>
+										);
+									})
+								)}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			);
+		}
+
+
+		// ══════════════════════════════════════════════════════════════════
+		// 📢 COMPONENTE PROMOCIONES (sin cambios)
+		// ══════════════════════════════════════════════════════════════════
+
+		function PromoPanel({ onToast }) {
+			const [subscribers, setSubscribers] = useState([]);
+			const [history, setHistory] = useState([]);
+			const [loading, setLoading] = useState(true);
+			const [title, setTitle] = useState("");
+			const [description, setDescription] = useState("");
+			const [sending, setSending] = useState(false);
+
+			const fetchData = useCallback(async () => {
+				try {
+					const [subsRes, histRes] = await Promise.all([
+						fetch(withTenant(ENDPOINTS.promoSubscribers)),
+						fetch(withTenant(ENDPOINTS.promoHistory))
+					]);
+					const subs = await subsRes.json();
+					const hist = await histRes.json();
+					setSubscribers(Array.isArray(subs) ? subs : []);
+					setHistory(Array.isArray(hist) ? hist : []);
+				} catch (err) {
+					console.error('Error loading promo data:', err);
+				} finally {
+					setLoading(false);
+				}
+			}, []);
+
+			useEffect(() => { fetchData(); }, [fetchData]);
+
+			const handleSend = async () => {
+				if (!title.trim() || !description.trim()) {
+					onToast({ message: "Por favor completa título y descripción", type: "error" });
+					return;
+				}
+
+				setSending(true);
+				try {
+					const res = await fetch(ENDPOINTS.sendPromo, {
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: withTenantBody({ title: title.trim(), description: description.trim() })
+					});
+					const data = await res.json();
+
+					if (data.success) {
+						onToast({ message: `✅ Promoción enviada a ${data.sent_count} suscriptores`, type: "success" });
+						setTitle("");
+						setDescription("");
+						fetchData();
+					} else {
+						onToast({ message: `Error: ${data.error}`, type: "error" });
+					}
+				} catch (err) {
+					onToast({ message: "Error enviando promoción", type: "error" });
+				} finally {
+					setSending(false);
+				}
+			};
+
+			return (
+				<div style={{ animation: 'fadeIn 0.3s ease' }}>
+					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+						<StatCard icon="👥" label="Suscriptores" value={subscribers.length} color="#8B5CF6" />
+						<StatCard icon="📬" label="Promos Enviadas" value={history.length} color="#2A2185" />
+					</div>
+
+					<div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', marginBottom: '20px' }}>
+						<h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>📢 Enviar Promoción</h3>
+
+						<div style={{ marginBottom: '16px' }}>
+							<label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>TÍTULO DELA PROMOCIÓN</label>
+							<input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ej: ¡10% de descuento en pizzas este finde!" maxLength={60} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #E5E7EB', fontSize: '14px', outline: 'none' }} />
+							<div style={{ fontSize: '10px', color: '#9CA3AF', marginTop: '4px', textAlign: 'right' }}>{title.length}/60</div>
+						</div>
+
+						<div style={{ marginBottom: '16px' }}>
+							<label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.5px' }}>DESCRIPCIÓN</label>
+							<textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ej: Válido sábado y domingo para todas las pizzas del menú. Aplica en domicilioy para recoger." maxLength={500} rows={4} style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '2px solid #E5E7EB', fontSize: '14px', resize: 'vertical', outline: 'none', fontFamily: 'inherit' }} />
+							<div style={{ fontSize: '10px', color: '#9CA3AF', marginTop: '4px', textAlign: 'right' }}>{description.length}/500</div>
+						</div>
+
+						<div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px' }}>
+							Se enviará a {subscribers.length} suscriptor{subscribers.length !== 1 ? 'es' : ''} activo{subscribers.length !== 1 ? 's' : ''}
+						</div>
+
+						<button onClick={handleSend} disabled={sending} style={{ width: '100%', padding: '14px', borderRadius: '10px', border: 'none', background: sending ? '#9CA3AF' : '#8B5CF6', color: 'white', fontSize: '14px', fontWeight: 700, cursor: sending ? 'not-allowed' : 'pointer' }}>
+							{sending ? '📤 Enviando...' : '📢 Enviar Promoción'}
+						</button>
+					</div>
+
+					{history.length > 0 && (
+						<div style={{ background: 'white', borderRadius: '20px', padding: '24px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)' }}>
+							<h3 style={{ fontSize: '16px', fontWeight: 700, color: '#111827', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>📋 Historial de Promociones</h3>
+							<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+								{history.map((promo, idx) => (
+									<div key={idx} style={{ padding: '16px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', borderRadius: '10px' }}>
+										<div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+											<div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>🔥 {promo.title}</div>
+											<div style={{ fontSize: '11px', color: '#9CA3AF' }}>{formatDate(promo.sent_at)} · {promo.sent_count} envíos</div>
+										</div>
+										<div style={{ fontSize: '13px', color: '#6B7280' }}>{promo.description}</div>
+									</div>
+								))}
+							</div>
+						</div>
+					)}
+				</div>
+			);
+		}
+
+		// ══════════════════════════════════════════════════════════════════
+		// 📦 COMPONENTE PEDIDOS
+		// ══════════════════════════════════════════════════════════════════
+
+		function OrderCard({ order, expanded, onToggle, onVerify, onReject, onAdvance }) {
+			const statusConfig = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
+			const isUrgent = ["pending", "awaiting_verification"].includes(order.status);
+			const canAdvance = NEXT_STATUS[order.status];
+
+			// Manejar ambos nombres de campos: total_amount y total
+			const orderTotal = parseFloat(order.total_amount || order.total || 0);
+			const shippingCost = parseFloat(order.shipping_cost || 0);
+			const grandTotal = orderTotal + shippingCost;
+
+			return (
+				<div className="order-card-wrap" style={{ background: "#FFFFFF", borderRadius: "20px", border: `1.5px solid ${isUrgent ? statusConfig.border : "#E2E8F0"}`, padding: "15px 18px", cursor: "pointer", transition: "all 0.18s", boxShadow: isUrgent ? `0 4px 20px ${statusConfig.color}22` : "0 7px 25px rgba(0,0,0,0.08)", animation: isUrgent ? "urgentGlow 2s infinite" : "slideUp 0.3s ease" }} onClick={onToggle}>
+					<div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: expanded ? "16px" : "0" }}>
+						<div style={{ flex: 1 }}>
+							<div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+								<div style={{ fontSize: "16px", fontWeight: 800, color: "#111827" }}>Pedido #{order.id}</div>
+								<StatusBadge status={order.status} />
+								{order.has_delivery_issue && (
+									<div style={{ background: "#FEF3C7", color: "#92400E", fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "20px", border: "1px solid #F59E0B" }}>
+										{order.delivery_evidence_status === 'no_answer' ? '🚪 No abrieron' : '⚠ Problema'}
+									</div>
+								)}
+								<div style={{ fontSize: "11px", color: "#9CA3AF", fontWeight: 600 }}>{timeAgo(order.created_at)}</div>
+							</div>
+							<div style={{ fontSize: "13px", color: "#6B7280", fontWeight: 500 }}>👤 {order.customer_name} · 📞 {order.customer_phone}</div>
+							{order.rider_name && (
+								<div style={{ fontSize: "12px", color: "#8B5CF6", fontWeight: 600, marginTop: "4px" }}>🛵 Domiciliario: {order.rider_name}
+								</div>
+							)}
+						</div>
+						<div style={{ fontSize: "18px", fontWeight: 800, color: statusConfig.color, textAlign: "right" }}>
+							{formatCurrency(grandTotal)}
+						</div>
+					</div>
+
+					{expanded && (
+						<div style={{ animation: "slideDown 0.3s ease", overflow: "hidden" }}>
+							<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "14px", padding: "16px 0", borderTop: "1px solid #F3F4F6", borderBottom: "1px solid #F3F4F6", marginBottom: "16px" }}>
+								<InfoRow icon={RESTAURANT_CONFIG.orderTypeIcons[order.order_type]} label="Tipo" value={order.order_type} />
+								<InfoRow icon={RESTAURANT_CONFIG.paymentMethods[order.payment_method]} label="Pago" value={order.payment_method} />
+								<InfoRow icon="🧾" label="Subtotal" value={formatCurrency(orderTotal)} />
+								<InfoRow icon="🛵" label="Envío" value={formatCurrency(shippingCost)} />
+								{order.rider_name && (
+									<InfoRow icon="🛵" label="Domiciliario" value={order.rider_name} />
+								)}
+							</div>
+
+							{order.has_delivery_issue && (
+								<div style={{ padding: "12px 14px", background: order.delivery_evidence_status === 'no_answer' ? "#FEF3C7" : "#FEE2E2", borderRadius: "10px", marginBottom: "12px", border: `1px solid ${order.delivery_evidence_status === 'no_answer' ? '#F59E0B' : '#EF4444'}` }}>
+									<div style={{ fontSize: "10px", fontWeight: 800, color: order.delivery_evidence_status === 'no_answer' ? "#92400E" : "#991B1B", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>
+										{order.delivery_evidence_status === 'no_answer' ? '🚪 No abrieron la puerta' : '⚠ Problema en entrega'}
+									</div>
+									{order.delivery_notes && (
+										<div style={{ fontSize: "13px", color: "#374151", fontWeight: 500 }}>"{order.delivery_notes}"</div>
+									)}
+									{order.delivery_evidence_at && (
+										<div style={{ fontSize: "11px", color: "#6B7280", marginTop: "4px" }}>Reportado {timeAgo(order.delivery_evidence_at)}</div>
+									)}
+								</div>
+							)}
+
+							{order.delivery_address && (
+								<div style={{ padding: "12px", background: "#F9FAFB", borderRadius: "10px", marginBottom: "16px" }}>
+									<div style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "6px" }}>📍 Dirección de Entrega</div>
+									<div style={{ fontSize: "13px", color: "#374151", fontWeight: 500 }}>{order.delivery_address}</div>
+								</div>
+							)}
+
+							<div style={{ marginBottom: "16px" }}>
+								<div style={{ fontSize: "10px", fontWeight: 700, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>🛒 Productos</div>
+								{order.products?.map((p, i) => (
+									<div key={i} style={{ padding: "8px 0", borderBottom: i < order.products.length - 1 ? "1px solid #F3F4F6" : "none" }}>
+										<div style={{ display: "flex", justifyContent: "space-between" }}>
+											<span style={{ fontSize: "13px", color: "#374151" }}>{p.nombre}</span>
+											<span style={{ fontSize: "13px", fontWeight: 700, color: "#111827" }}>{formatCurrency(p.precio)}</span>
+										</div>
+										{p.notas && p.notas.trim() !== '' && (
+											<div style={{ fontSize: "11px", color: "#F59E0B", fontWeight: 600, marginTop: "3px", display: "flex", alignItems: "center", gap: "4px" }}>
+												<span>⚠️</span>
+												<span style={{ fontStyle: "italic" }}>{p.notas}</span>
+											</div>
+										)}
+									</div>
+								))}
+							</div>
+
+							<div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }} onClick={(e) => e.stopPropagation()}>
+								{order.status === "awaiting_verification" && (
+									<>
+										<ActionButton label="✅ Confirmar Pago" color="#10B981" onClick={() => onVerify(order.id)} />
+										<ActionButton label="❌ Rechazar" color="#EF4444" variant="outline" onClick={() => onReject(order.id)} />
+									</>
+								)}
+								{canAdvance && order.status === "preparing" && (
+									<RiderAssignSelector orderId={order.id} currentRiderId={order.rider_id} onAssignAndAdvance={onAdvance} />
+								)}
+								{canAdvance && order.status !== "preparing" && (
+									<ActionButton label={`➡ Avanzar a ${STATUS_CONFIG[canAdvance]?.label}`} color="#2A2185" onClick={() => onAdvance(order.id, canAdvance)} />
+								)}
+								{order.customer_phone && (
+									<ActionButton
+										label="💬 WhatsApp"
+										color="#25D366"
+										variant="outline"
+										onClick={() => window.open(`https://wa.me/${order.customer_phone.replace(/[^0-9]/g, '')}`, '_blank')}
+									/>
+								)}
+							</div>
+						</div>
+					)}
+				</div>
+			);
+		}
+
+		// ══════════════════════════════════════════════════════════════════
+		// 🏠 COMPONENTE PRINCIPAL DASHBOARD
+		// ══════════════════════════════════════════════════════════════════
+
+		function Dashboard() {
+			const [orders, setOrders] = useState([]);
+			const [loading, setLoading] = useState(true);
+			const [error, setError] = useState(null);
+			const [lastRefresh, setLastRefresh] = useState(new Date());
+			const [toast, setToast] = useState(null);
+			const [activeTab, setActiveTab] = useState("pedidos");
+			const [filter, setFilter] = useState("all");
+			const [expandedId, setExpandedId] = useState(null);
+			const [newOrderAlert, setNewOrderAlert] = useState(null);
+			const prevOrdersRef = useRef([]);
+
+			// Hook de notificaciones
+			const notifications = useNotifications();
+
+			const fetchOrders = useCallback(async () => {
+				try {
+					const res = await fetch(withTenant(ENDPOINTS.orders));
+					if (!res.ok) throw new Error("API error");
+					const data = await res.json();
+					const newOrders = Array.isArray(data) ? data : [];
+
+					// Detectar nuevos pedidos
+					if (prevOrdersRef.current.length > 0) {
+						const prevIds = new Set(prevOrdersRef.current.map(o => o.id));
+						const now = Date.now();
+
+						const newOrdersDetected = newOrders.filter(o => {
+							if (!prevIds.has(o.id)) {
+								// Pedido nuevo detectado
+								const orderAge = now - new Date(o.created_at).getTime();
+								const isRecent = orderAge < 120000; // Menos de 2 minutos de antigüedad
+
+								// Notificar si:
+								// 1. Es pending o awaiting_verification (siempre)
+								// 2. O es confirmed pero recién creado
+								return ["pending", "awaiting_verification"].includes(o.status) ||
+									(o.status === "confirmed" && isRecent);
+							}
+							return false;
+						});
+
+						// Notificar cada nuevo pedido detectado
+						newOrdersDetected.forEach(order => {
+							console.log('🔔 NOTIFYING NEW ORDER:', order.id, 'Status:', order.status, 'Age:', Math.floor((now - new Date(order.created_at).getTime()) / 1000), 'seconds');
+							notifications.notifyNewOrder(order);
+							setNewOrderAlert(order);
+						});
+					}
+
+					prevOrdersRef.current = newOrders;
+					setOrders(newOrders);
+					setError(null);
+				} catch (err) {
+					console.warn("Using demo data:", err);
+					setOrders(RESTAURANT_CONFIG.demoOrders);
+					setError("demo");
+				} finally {
+					setLoading(false);
+					setLastRefresh(new Date());
+				}
+			}, [notifications]);
+
+			useEffect(() => {
+				fetchOrders();
+				const i = setInterval(fetchOrders, RESTAURANT_CONFIG.refreshInterval);
+				return () => clearInterval(i);
+			}, [fetchOrders]);
+
+			const handleVerify = async (orderId) => {
+				try {
+					const res = await fetch(ENDPOINTS.verify, { method: "POST", headers: { "Content-Type": "application/json" }, body: withTenantBody({ order_id: orderId, verified_by: "Encargado", action: "approved" }) });
+					const data = await res.json();
+					if (data.success) { setToast({ message: `✅ Pago #${orderId} confirmado. Cliente notificado por WhatsApp.`, type: "success" }); fetchOrders(); }
+					else { setToast({ message: `Error: ${data.error}`, type: "error" }); }
+				} catch { setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "confirmed", confirmed_at: new Date().toISOString() } : o)); setToast({ message: `✅ Pago #${orderId} confirmado (modo demo).`, type: "success" }); }
+			};
+
+			const handleReject = async (orderId) => {
+				try {
+					const res = await fetch(ENDPOINTS.verify, { method: "POST", headers: { "Content-Type": "application/json" }, body: withTenantBody({ order_id: orderId, verified_by: "Encargado", action: "rejected", notes: "Pago no verificado" }) });
+					const data = await res.json();
+					if (data.success) { setToast({ message: `❌ Pago #${orderId} rechazado. Cliente notificado.`, type: "error" }); fetchOrders(); }
+				} catch { setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "cancelled" } : o)); setToast({ message: `❌ Pago #${orderId} rechazado (modo demo).`, type: "error" }); }
+			};
+
+			const handleAdvance = async (orderId, newStatus) => {
+				try {
+					const res = await fetch(ENDPOINTS.advance, { method: "POST", headers: { "Content-Type": "application/json" }, body: withTenantBody({ order_id: orderId, new_status: newStatus }) });
+					const data = await res.json();
+					if (data.success) { setToast({ message: `➡ Pedido #${orderId} → ${STATUS_CONFIG[newStatus]?.label}`, type: "info" }); fetchOrders(); }
+				} catch { setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: newStatus } : o)); setToast({ message: `➡ Pedido #${orderId} → ${STATUS_CONFIG[newStatus]?.label} (modo demo)`, type: "info" }); }
+			};
+
+			const urgent = orders.filter((o) => ["pending", "awaiting_verification"].includes(o.status));
+			const active = orders.filter((o) => ["confirmed", "preparing", "delivering", "ready_pickup"].includes(o.status));
+			const completed = orders.filter((o) => ["delivered", "cancelled"].includes(o.status));
+			const filtered = filter === "urgent" ? urgent : filter === "active" ? active : filter === "completed" ? completed : orders;
+			const totalSales = orders.filter((o) => !["cancelled"].includes(o.status)).reduce((sum, o) => {
+				return sum + safeNumber(o.total_amount || o.total) + safeNumber(o.shipping_cost);
+			}, 0);
+
+			return (
+				<div style={{ minHeight: "100vh", background: "#F5F6FA" }}>
+					{newOrderAlert && <NewOrderAlert order={newOrderAlert} onDismiss={() => setNewOrderAlert(null)} />}
+
+					<header className="header-wrap" style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)", borderBottom: "1px solid #E2E8F0", padding: "12px 20px", position: "sticky", top: 0, zIndex: 50, boxShadow: "0 1px 0 #E2E8F0, 0 2px 10px rgba(15,23,42,0.05)" }}>
+						<div style={{ maxWidth: "960px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
+							<div style={{ minWidth: 0, flex: 1 }}>
+								<h1 style={{ fontSize: "19px", fontWeight: 800, color: "#0F172A", display: "flex", alignItems: "center", gap: "8px", letterSpacing: "-0.3px" }}>{RESTAURANT_CONFIG.icon} {RESTAURANT_CONFIG.name}</h1>
+								<div style={{ fontSize: "11px", color: "#94A3B8", marginTop: "2px", fontWeight: 500 }}>
+									{RESTAURANT_CONFIG.tagline} · {formatTime(lastRefresh)}
+									{error === "demo" && <span style={{ marginLeft: "8px", background: "#FEF3C7", color: "#92400E", padding: "2px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: 700 }}>DEMO</span>}
+								</div>
+							</div>
+							<div className="notif-controls" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+								<NotificationControls notifications={notifications} />
+								<button onClick={fetchOrders} style={{ padding: "8px 12px", borderRadius: "10px", border: "1.5px solid #E2E8F0", background: "#FFFFFF", color: "#374151", fontSize: "14px", cursor: "pointer", boxShadow: "0 1px 2px rgba(15,23,42,0.04)" }}>🔄</button>
+							</div>
+						</div>
+						<div className="header-nav" style={{ maxWidth: "960px", margin: "0 auto", marginTop: "8px", display: "flex", gap: "0", borderTop: "1px solid #F1F5F9", paddingTop: "2px" }}>
+							<button className="nav-tab" onClick={() => setActiveTab("pedidos")} style={{ padding: "9px 16px", fontSize: "13px", fontWeight: activeTab === "pedidos" ? 700 : 500, color: activeTab === "pedidos" ? "#0F172A" : "#94A3B8", background: "transparent", border: "none", borderBottom: activeTab === "pedidos" ? "2.5px solid #2A2185" : "2.5px solid transparent", cursor: "pointer", transition: "all 0.18s" }}>🍕 Pedidos</button>
+							<button className="nav-tab" onClick={() => setActiveTab("analytics")} style={{ padding: "9px 16px", fontSize: "13px", fontWeight: activeTab === "analytics" ? 700 : 500, color: activeTab === "analytics" ? "#0F172A" : "#94A3B8", background: "transparent", border: "none", borderBottom: activeTab === "analytics" ? "2.5px solid #10B981" : "2.5px solid transparent", cursor: "pointer", transition: "all 0.18s" }}>📊 Analytics</button>
+							<button className="nav-tab" onClick={() => setActiveTab("promos")} style={{ padding: "9px 16px", fontSize: "13px", fontWeight: activeTab === "promos" ? 700 : 500, color: activeTab === "promos" ? "#0F172A" : "#94A3B8", background: "transparent", border: "none", borderBottom: activeTab === "promos" ? "2.5px solid #8B5CF6" : "2.5px solid transparent", cursor: "pointer", transition: "all 0.18s" }}>📢 Promos</button>
+							<button className="nav-tab" onClick={() => setActiveTab("riders")} style={{ padding: "9px 16px", fontSize: "13px", fontWeight: activeTab === "riders" ? 700 : 500, color: activeTab === "riders" ? "#0F172A" : "#94A3B8", background: "transparent", border: "none", borderBottom: activeTab === "riders" ? "2.5px solid #2A2185" : "2.5px solid transparent", cursor: "pointer", transition: "all 0.18s" }}>🛵 Domis</button>
+							<button className="nav-tab" onClick={() => setActiveTab("ventas")} style={{ padding: "9px 16px", fontSize: "13px", fontWeight: activeTab === "ventas" ? 700 : 500, color: activeTab === "ventas" ? "#0F172A" : "#94A3B8", background: "transparent", border: "none", borderBottom: activeTab === "ventas" ? "2.5px solid #10B981" : "2.5px solid transparent", cursor: "pointer", transition: "all 0.18s" }}>💰 Ventas</button>
+						</div>
+					</header>
+
+					<main className="main-area" style={{ maxWidth: "960px", margin: "0 auto", padding: "18px 16px 80px" }}>
+						{activeTab === "analytics" ? (
+							<Analytics orders={orders} />
+						) : activeTab === "promos" ? (
+							<PromoPanel onToast={setToast} />
+						) : activeTab === "riders" ? (
+							<RidersPanel onToast={setToast} orders={orders} fetchOrders={fetchOrders} />
+						) : activeTab === "ventas" ? (
+							<SalesHistory orders={orders} />
+						) : (
+							<>
+								<div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px", marginBottom: "20px" }}>
+									<StatCard icon="🔴" label="Urgentes" value={urgent.length} color="#EF4444" />
+									<StatCard icon="🔥" label="Activos" value={active.length} color="#2A2185" />
+									<StatCard icon="📦" label="Total Hoy" value={orders.length} color="#8B5CF6" />
+									<StatCard icon="💰" label="Ventas" value={formatCurrency(totalSales)} color="#10B981" />
+								</div>
+
+								<div className="filter-bar" style={{ display: "flex", gap: "8px", marginBottom: "20px", overflowX: "auto", paddingBottom: "4px" }}>
+									<FilterTab label="🔴 Urgentes" count={urgent.length} active={filter === "urgent"} onClick={() => setFilter("urgent")} color="#EF4444" />
+									<FilterTab label="🔥 Activos" count={active.length} active={filter === "active"} onClick={() => setFilter("active")} color="#2A2185" />
+									<FilterTab label="✔ Completados" count={completed.length} active={filter === "completed"} onClick={() => setFilter("completed")} color="#6B7280" />
+									<FilterTab label="Todos" count={orders.length} active={filter === "all"} onClick={() => setFilter("all")} color="#374151" />
+								</div>
+
+								{loading ? (
+									<div style={{ textAlign: "center", padding: "60px 20px", color: "#9CA3AF" }}>
+										<div style={{ fontSize: "40px", marginBottom: "12px", animation: "pulse 1.5s infinite" }}>{RESTAURANT_CONFIG.icon}</div>
+										<div style={{ fontWeight: 600 }}>Cargando pedidos...</div>
+									</div>
+								) : filtered.length === 0 ? (
+									<div style={{ textAlign: "center", padding: "60px 20px", color: "#9CA3AF" }}>
+										<div style={{ fontSize: "40px", marginBottom: "12px" }}>{filter === "urgent" ? "🎉" : "📭"}</div>
+										<div style={{ fontWeight: 600 }}>{filter === "urgent" ? "¡Sin pedidos urgentes!" : "No hay pedidos en esta categoría"}</div>
+									</div>
+								) : (
+									<div style={{ display: "flex", flexDirection: "column", gap: "12px", animation: "fadeIn 0.3s ease" }}>
+										{filtered.map((order) => (
+											<OrderCard key={order.id} order={order} expanded={expandedId === order.id} onToggle={() => setExpandedId(expandedId === order.id ? null : order.id)} onVerify={handleVerify} onReject={handleReject} onAdvance={handleAdvance} />
+										))}
+									</div>
+								)}
+							</>
+						)}
+					</main>
+
+					{toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+				</div>
+			);
+		}
+
+		// ══════════════════════════════════════════════════════════════════
+		// 🛵 COMPONENTE: SELECTOR DE DOMICILIARIO (dentro de OrderCard)
+		// ══════════════════════════════════════════════════════════════════
+
+		function RiderAssignSelector({ orderId, currentRiderId, onAssignAndAdvance }) {
+			const [riders, setRiders] = React.useState([]);
+			const [selected, setSelected] = React.useState(currentRiderId || '');
+			const [assigning, setAssigning] = React.useState(false);
+
+			React.useEffect(() => {
+				fetch(withTenant(ENDPOINTS.riders))
+					.then(r => r.json())
+					.then(data => setRiders(Array.isArray(data) ? data.filter(r => r.is_active) : []))
+					.catch(() => setRiders([
+						{ id: 1, name: 'Juan Reyes', active_orders: 0 },
+						{ id: 2, name: 'Pedro Martínez', active_orders: 1 },
+					]));
+			}, []);
+
+			const handleAssignAndAdvance = async () => {
+				if (!selected) { alert('Selecciona un domiciliario'); return; }
+				setAssigning(true);
+				try {
+					await fetch(ENDPOINTS.assignRider, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: withTenantBody({ order_id: orderId, rider_id: parseInt(selected) })
+					});
+				} catch (e) { /* continúa igual */ }
+				onAssignAndAdvance(orderId, 'delivering');
+				setAssigning(false);
+			};
+
+			return (
+				<div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', width: '100%' }}>
+					<select
+						value={selected}
+						onChange={e => setSelected(e.target.value)}
+						style={{ flex: 1, minWidth: '140px', padding: '9px 12px', borderRadius: '10px', border: '2px solid #E5E7EB', fontSize: '13px', background: 'white', color: '#374151', cursor: 'pointer' }}
+					>
+						<option value="">🛵 Asignar domiciliario...</option>
+						{riders.map(r => (
+							<option key={r.id} value={r.id}>
+								{r.name}{r.active_orders > 0 ? ` (${r.active_orders} activo${r.active_orders !== 1 ? 's' : ''})` : ' · Disponible'}
+							</option>
+						))}
+					</select>
+					<button
+						onClick={handleAssignAndAdvance}
+						disabled={assigning || !selected}
+						style={{ padding: '10px 18px', borderRadius: '10px', border: '2px solid #2A2185', background: selected ? '#2A2185' : '#E5E7EB', color: selected ? '#FFFFFF' : '#9CA3AF', fontSize: '13px', fontWeight: 700, cursor: selected ? 'pointer' : 'not-allowed', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+					>
+						{assigning ? '...' : '🛵 Enviar'}
+					</button>
+				</div>
+			);
+		}
+
+		// ══════════════════════════════════════════════════════════════════
+		// 🛵 COMPONENTE: PANEL DE DOMICILIARIOS (pestaña completa)
+		// ══════════════════════════════════════════════════════════════════
+
+		function RidersPanel({ onToast, orders, fetchOrders }) {
+			const [riders, setRiders] = React.useState([]);
+			const [loading, setLoading] = React.useState(true);
+			const [showForm, setShowForm] = React.useState(false);
+			const [editingRider, setEditingRider] = React.useState(null);
+			const [formName, setFormName] = React.useState('');
+			const [formPin, setFormPin] = React.useState('');
+			const [saving, setSaving] = React.useState(false);
+
+			const fetchRiders = React.useCallback(async () => {
+				setLoading(true);
+				try {
+					const res = await fetch(withTenant(ENDPOINTS.riders));
+					const data = await res.json();
+					setRiders(Array.isArray(data) ? data : []);
+				} catch {
+					setRiders([
+						{ id: 1, name: 'Juan Reyes', is_active: true, active_orders: 1, total_delivered: 12 },
+						{ id: 2, name: 'Pedro Martínez', is_active: true, active_orders: 0, total_delivered: 8 },
+					]);
+				} finally { setLoading(false); }
+			}, []);
+
+			React.useEffect(() => { fetchRiders(); }, [fetchRiders]);
+
+			const openCreate = () => {
+				setEditingRider(null);
+				setFormName('');
+				setFormPin('');
+				setShowForm(true);
+			};
+
+			const openEdit = (rider) => {
+				setEditingRider(rider);
+				setFormName(rider.name);
+				setFormPin('');
+				setShowForm(true);
+			};
+
+			const saveRider = async () => {
+				if (!formName.trim()) { onToast({ message: 'Ingresa el nombre del domiciliario', type: 'error' }); return; }
+				if (!editingRider && (formPin.length !== 4 || !/^\d{4}$/.test(formPin))) { onToast({ message: 'El PIN debe tener exactamente 4 dígitos', type: 'error' }); return; }
+				if (editingRider && formPin && (formPin.length !== 4 || !/^\d{4}$/.test(formPin))) { onToast({ message: 'El PIN debe tener exactamente 4 dígitos', type: 'error' }); return; }
+				setSaving(true);
+				try {
+					const payload = editingRider
+						? { action: 'update', id: editingRider.id, name: formName.trim(), pin: formPin || undefined }
+						: { action: 'create', name: formName.trim(), pin: formPin };
+					const res = await fetch(ENDPOINTS.riders, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: withTenantBody(payload) });
+					const data = await res.json();
+					if (data.success) {
+						onToast({ message: editingRider ? `✅ ${formName} actualizado` : `✅ ${formName} creado con PIN ${formPin}`, type: 'success' });
+						setShowForm(false);
+						fetchRiders();
+					} else { onToast({ message: data.error || 'Error guardando', type: 'error' }); }
+				} catch {
+					onToast({ message: editingRider ? '✅ Domiciliario actualizado (demo)' : `✅ Domiciliario creado (demo)`, type: 'success' });
+					setShowForm(false);
+					fetchRiders();
+				} finally { setSaving(false); }
+			};
+
+			const toggleActive = async (rider) => {
+				try {
+					await fetch(ENDPOINTS.riders, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: withTenantBody({ action: 'toggle', id: rider.id, is_active: !rider.is_active }) });
+					onToast({ message: `${rider.is_active ? '⏸' : '▶'} ${rider.name} ${rider.is_active ? 'desactivado' : 'activado'}`, type: 'info' });
+					fetchRiders();
+				} catch { onToast({ message: 'Error actualizando estado', type: 'error' }); }
+			};
+
+			const activeRiders = riders.filter(r => r.is_active);
+			const inactiveRiders = riders.filter(r => !r.is_active);
+			const getInitials = (name) => name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+			const riderColors = ['#2A2185', '#8B5CF6', '#F59E0B', '#EF4444', '#1795CE'];
+
+			return (
+				<div style={{ animation: 'fadeIn 0.3s ease' }}>
+					<div style={{ background: 'white', borderRadius: '20px', padding: '20px', marginBottom: '16px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+						<div>
+							<h2 style={{ fontSize: '20px', fontWeight: 800, color: '#111827', marginBottom: '4px' }}>🛵 Domiciliarios</h2>
+							<p style={{ fontSize: '12px', color: '#6B7280' }}>{activeRiders.length} activo{activeRiders.length !== 1 ? 's' : ''} · Gestiona tu equipo de entrega</p>
+						</div>
+						<button onClick={openCreate} style={{ padding: '10px 18px', borderRadius: '10px', border: 'none', background: '#2A2185', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Nuevo</button>
+					</div>
+
+					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+						<StatCard icon="🛵" label="Activos" value={activeRiders.length} color="#2A2185" />
+						<StatCard icon="📦" label="En camino" value={activeRiders.reduce((s, r) => s + (r.active_orders || 0), 0)} color="#8B5CF6" />
+						<StatCard icon="✅" label="Entregas hoy" value={activeRiders.reduce((s, r) => s + (r.total_delivered || 0), 0)} color="#2A2185" />
+					</div>
+
+					{showForm && (
+						<div style={{ background: 'white', borderRadius: '20px', padding: '20px', border: '2px solid #2A2185', marginBottom: '16px', animation: 'slideUp 0.3s ease' }}>
+							<h3 style={{ fontSize: '15px', fontWeight: 700, color: '#111827', marginBottom: '16px' }}>
+								{editingRider ? `✏️ Editar: ${editingRider.name}` : '➕ Nuevo domiciliario'}
+							</h3>
+							<div style={{ marginBottom: '12px' }}>
+								<label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', marginBottom: '6px' }}>Nombre completo</label>
+								<input type="text" value={formName} onChange={e => setFormName(e.target.value)} placeholder="Ej: Juan Reyes" maxLength={50} style={{ width: '100%', padding: '11px 14px', borderRadius: '10px', border: '2px solid #E5E7EB', fontSize: '14px' }} />
+							</div>
+							<div style={{ marginBottom: '16px' }}>
+								<label style={{ display: 'block', fontSize: '11px', fontWeight: 700, color: '#6B7280', textTransform: 'uppercase', marginBottom: '6px' }}>
+									PIN (4 dígitos){editingRider && <span style={{ fontWeight: 400, color: '#9CA3AF' }}> — dejar vacío para mantener el actual</span>}
+								</label>
+								<input type="number" value={formPin} onChange={e => setFormPin(e.target.value.slice(0, 4))} placeholder="1234" style={{ width: '140px', padding: '11px 14px', borderRadius: '10px', border: '2px solid #E5E7EB', fontSize: '18px', letterSpacing: '6px', fontWeight: 700 }} />
+							</div>
+							<div style={{ display: 'flex', gap: '8px' }}>
+								<button onClick={saveRider} disabled={saving} style={{ padding: '11px 24px', borderRadius: '10px', border: 'none', background: saving ? '#9CA3AF' : '#2A2185', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+									{saving ? 'Guardando...' : editingRider ? 'Guardar cambios' : 'Crear domiciliario'}
+								</button>
+								<button onClick={() => setShowForm(false)} style={{ padding: '11px 20px', borderRadius: '10px', border: '2px solid #E5E7EB', background: 'transparent', color: '#6B7280', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
+							</div>
+						</div>
+					)}
+
+					{loading ? (
+						<div style={{ textAlign: 'center', padding: '40px', color: '#9CA3AF' }}>Cargando domiciliarios...</div>
+					) : (
+						<>
+							{activeRiders.length > 0 && (
+								<div style={{ background: 'white', borderRadius: '20px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', overflow: 'hidden', marginBottom: '16px' }}>
+									{activeRiders.map((rider, idx) => (
+										<div key={rider.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', borderBottom: idx < activeRiders.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+											<div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `${riderColors[idx % riderColors.length]}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 700, color: riderColors[idx % riderColors.length], flexShrink: 0 }}>
+												{getInitials(rider.name)}
+											</div>
+											<div style={{ flex: 1 }}>
+												<div style={{ fontSize: '14px', fontWeight: 700, color: '#111827' }}>{rider.name}</div>
+												<div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
+													{rider.active_orders > 0 ? `📦 ${rider.active_orders} pedido${rider.active_orders !== 1 ? 's' : ''} en camino` : '✅ Disponible'}
+													{rider.total_delivered > 0 && ` · ${rider.total_delivered} entregados hoy`}
+												</div>
+											</div>
+											<div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+												<button onClick={() => openEdit(rider)} style={{ padding: '6px 12px', borderRadius: '8px', border: '1.5px solid #E5E7EB', background: 'transparent', color: '#374151', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>✏️</button>
+												<button onClick={() => toggleActive(rider)} style={{ padding: '6px 12px', borderRadius: '8px', border: '1.5px solid #FEE2E2', background: '#FEF2F2', color: '#EF4444', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Desactivar</button>
+											</div>
+										</div>
+									))}
+								</div>
+							)}
+
+							{activeRiders.length === 0 && !showForm && (
+								<div style={{ textAlign: 'center', padding: '50px 20px', background: 'white', borderRadius: '20px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)' }}>
+									<div style={{ fontSize: '40px', marginBottom: '12px' }}>🛵</div>
+									<div style={{ fontSize: '16px', fontWeight: 700, color: '#374151', marginBottom: '8px' }}>Sin domiciliarios activos</div>
+									<div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '20px' }}>Crea el primer domiciliario para empezar a asignar pedidos</div>
+									<button onClick={openCreate} style={{ padding: '10px 24px', borderRadius: '10px', border: 'none', background: '#2A2185', color: 'white', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Crear domiciliario</button>
+								</div>
+							)}
+
+							{inactiveRiders.length > 0 && (
+								<div style={{ background: 'white', borderRadius: '20px', border: '1px solid #E5E7EB', boxShadow: '0 7px 25px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
+									<div style={{ padding: '12px 16px', borderBottom: '1px solid #F3F4F6', fontSize: '11px', fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Inactivos</div>
+									{inactiveRiders.map((rider, idx) => (
+										<div key={rider.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderBottom: idx < inactiveRiders.length - 1 ? '1px solid #F3F4F6' : 'none', opacity: 0.6 }}>
+											<div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#9CA3AF' }}>{getInitials(rider.name)}</div>
+											<div style={{ flex: 1 }}><div style={{ fontSize: '13px', fontWeight: 600, color: '#6B7280' }}>{rider.name}</div></div>
+											<button onClick={() => toggleActive(rider)} style={{ padding: '6px 12px', borderRadius: '8px', border: '1.5px solid #D1FAE5', background: '#F0FDF4', color: '#166534', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Activar</button>
+										</div>
+									))}
+								</div>
+							)}
+						</>
+					)}
+
+					<div style={{ margin: '20px 0', padding: '14px 16px', background: '#F0FDF4', borderRadius: '12px', border: '1px solid #BBF7D0', fontSize: '12px', color: '#166534' }}>
+						<strong>💡 App del domiciliario:</strong> Cada domiciliario accede a <strong>nichedashboard.talos.example.com/rider.html</strong> desde su celular usando su PIN personal.
+					</div>
+				</div>
+			);
+		}
+		ReactDOM.createRoot(document.getElementById("root")).render(<Dashboard />);
+
+		// ── Registro automático de FCM token del Manager ──
+		async function registerManagerFCMToken() {
+			const bridgeToken = window.AndroidBridge?.getFCMToken?.() || null;
+			const windowToken = window._fcmToken || null;
+			const fcmToken = windowToken || bridgeToken;
+
+			console.log('MANAGER FCM:', { windowToken, bridgeToken, fcmToken });
+
+			if (!fcmToken) {
+				setTimeout(registerManagerFCMToken, 3000);
+				return;
+			}
+			try {
+				const res = await fetch(`${RESTAURANT_CONFIG.apiBase}/manager/update-token`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: withTenantBody({ fcm_token: fcmToken })
+				});
+				const data = await res.json();
+				console.log('Manager FCM token registrado:', data);
+			} catch (e) {
+				console.warn('Error registrando token manager:', e);
+			}
+		}
+	</script>
+</body>
+
+</html>

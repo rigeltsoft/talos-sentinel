@@ -1,0 +1,3615 @@
+{
+  "name": "Agente_Carnaval_de_Sabores",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "sw-img",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.messages[0].image }}",
+                    "rightValue": ""
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Imagen"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "sw-doc",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.messages[0].document }}",
+                    "rightValue": ""
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Documento"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "sw-txt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.messages[0].text.body }}",
+                    "rightValue": ""
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Texto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "sw-loc",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.messages[0].location }}",
+                    "rightValue": ""
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Ubicacion"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "sw-aud",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "leftValue": "={{ $json.messages[0].audio }}",
+                    "rightValue": ""
+                  }
+                ]
+              },
+              "renameOutput": true,
+              "outputKey": "Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "78eafac8-8ba4-4820-991d-632eff150431",
+                    "leftValue": "={{ $json.messages[0].interactive }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "object",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Suscripcion"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "ee839732-5679-4762-971e-2f3e0573732c",
+      "name": "Tipo de Mensaje",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        512,
+        2304
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $('Mensaje Recibido').item.json.messages[0].image.id }}"
+      },
+      "id": "8bef7d2f-67c0-4fe1-8a64-0f5bde44b7bc",
+      "name": "Obtener URL Imagen",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        768,
+        1936
+      ],
+      "typeVersion": 1,
+      "webhookId": "9a1f369f-14a2-4f34-9723-753b2e5e3f7d",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "whatsAppApi",
+        "options": {
+          "response": {}
+        }
+      },
+      "id": "2b4f929a-edf8-45b2-9f9d-656734be22c6",
+      "name": "Descargar Imagen",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        960,
+        1936
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5M47PRtWANfUynHO",
+          "name": "WhatsApp Media Token"
+        },
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "text": "Eres un asistente de transcripción y descripción de documentos para un sistema de pagos de restaurante. Analiza esta imagen detalladamente.\n\nSi es un comprobante de pago, extrae:\n- Monto pagado\n- Fecha de la transacción\n- Nombre del titular\n- Banco o plataforma (Nequi, Daviplata, Bancolombia, etc.)\n- Número de referencia\n- Tipo de documento (transferencia, comprobante, captura de pantalla)\n\nSi es una foto de comida u otra imagen, descríbela detalladamente.\n\nResponde en español.",
+        "inputType": "base64",
+        "options": {
+          "detail": "auto"
+        }
+      },
+      "id": "e54ba210-f835-4f03-a9c3-f5302d59dd44",
+      "name": "Analizar Imagen (OpenAI)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1168,
+        1936
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "my2xq0c2eykVjInp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-img",
+              "name": "text",
+              "type": "string",
+              "value": "=Descripción de imagen:\n{{ $json.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5305ed4c-41b7-4e06-874e-b55dd4023a73",
+      "name": "Set Imagen",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1392,
+        1936
+      ],
+      "typeVersion": 3.4,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $('Mensaje Recibido').item.json.messages[0].document.id }}"
+      },
+      "id": "492dfff2-1a75-4e84-b8d3-d5aa10fcd8ef",
+      "name": "Obtener URL Documento",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        768,
+        2176
+      ],
+      "typeVersion": 1,
+      "webhookId": "39922d2f-b97c-4b7f-88a8-e2fb3b9ca6f8",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "RB0TogzUpWYMaDKb",
+          "name": "Talos_Sentinel_WABA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "b59b212e-8f01-453f-b635-6a747f2920ae",
+      "name": "Descargar Documento",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        944,
+        2176
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5M47PRtWANfUynHO",
+          "name": "WhatsApp Media Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "id": "1bbab496-f6a5-42e0-bc4f-0edeeeffec54",
+      "name": "Extraer Contenido PDF",
+      "type": "n8n-nodes-base.extractFromFile",
+      "position": [
+        1136,
+        2176
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"gpt-4o\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Extrae todo el contenido de este documento. Si es un comprobante de pago, identifica: monto, fecha, banco/plataforma, referencia, titular. Responde en español.\\n\\nContenido del documento:\\n{{ $json.data }}\"\n    }\n  ],\n  \"max_tokens\": 1000\n}",
+        "options": {}
+      },
+      "id": "86e42eb4-b132-4484-a2d9-e2e74cab217d",
+      "name": "Gemini Extraer PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1312,
+        2176
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "uKYgNX7kOuWkeOWf",
+          "name": "Wazuh_credencial_admin"
+        },
+        "httpHeaderAuth": {
+          "id": "EVmJP028i6gYXnV5",
+          "name": "OpenAI API Header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-doc",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $json.choices[0].message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "71c85c55-13dd-402c-8e1d-a7053244e4b5",
+      "name": "Set Documento",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1488,
+        2176
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-txt",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].text.body }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "39bbcaf3-0a10-4449-82a6-54d138c27065",
+      "name": "Set Texto",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1120,
+        2352
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "url": "=https://api.mapbox.com/search/geocode/v6/reverse?longitude={{ $json.messages[0].location.longitude }}&latitude={{ $json.messages[0].location.latitude }}&access_token=TU_TOKEN_PUBLICO_MAPBOX",
+        "options": {}
+      },
+      "id": "8914e75d-1e53-401e-8845-6a74b9fedbc3",
+      "name": "Mapbox Geocoding",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        768,
+        2480
+      ],
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-loc-txt",
+              "name": "text",
+              "type": "string",
+              "value": "=Mi ubicación es: {{ $json.features[0].properties.full_address || $json.features[0].properties.name || 'Dirección no disponible' }}"
+            },
+            {
+              "id": "s-loc-lat",
+              "name": "latitude",
+              "type": "string",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].location.latitude }}"
+            },
+            {
+              "id": "s-loc-lon",
+              "name": "longitude",
+              "type": "string",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].location.longitude }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "76a0cd9d-3c36-459f-ae13-e315f571911c",
+      "name": "Set Ubicacion",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1024,
+        2480
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $('Mensaje Recibido').item.json.messages[0].audio.id }}"
+      },
+      "id": "d374823d-7b44-4c9f-88ef-d81f5a90e766",
+      "name": "Obtener URL Audio",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        784,
+        2704
+      ],
+      "typeVersion": 1,
+      "webhookId": "901dce36-4fe4-4414-a21c-c5c776ac21c2",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "RPKwCwyMNNt6U5NA",
+          "name": "Whatapp_Prueba_Restaurante Demo"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "032a8158-bed0-4f10-94e5-546babeea4b0",
+      "name": "Descargar Audio",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        976,
+        2704
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "5M47PRtWANfUynHO",
+          "name": "WhatsApp Media Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "6814f8de-153d-4524-a54e-2d1b1f5ae2d4",
+      "name": "Transcribir Audio",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [
+        1328,
+        2704
+      ],
+      "typeVersion": 1.8,
+      "credentials": {
+        "openAiApi": {
+          "id": "my2xq0c2eykVjInp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s-aud",
+              "name": "text",
+              "type": "string",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "86a84adf-0f3b-4d3b-b530-8af6c05eee45",
+      "name": "Set Audio",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1712,
+        2704
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Mensaje del cliente: {{ $json.text }}\n{{ $('Tipo de Mensaje')?.item?.json?.messages?.[0]?.location?.latitude || '' }}\n{{ $('Tipo de Mensaje')?.item?.json?.messages?.[0]?.location?.longitude || '' }}\n\nHoy es: {{ $now.setZone('America/Bogota') }}",
+        "options": {
+          "systemMessage": "# Rol y Contexto del Agente\n\nEres el asistente virtual de **Restaurante Demo**, restaurante de comida rápida, almuerzos, comida típica y asados en Montería (sector Garzones). Gestionas pedidos a domicilio y para recoger vía WhatsApp.\n\n📍 Dirección: Calle 126 # 5-116, Garzones – Montería, Córdoba, Colombia\n⏰ Horario de servicio: 11:00 a.m. a 9:30 p.m. (todos los días, hora Colombia)\n🌐 Idioma: Español (tono amigable y respetuoso)\n💰 Moneda: Pesos colombianos (COP), usa el símbolo $\n📞 WhatsApp/Domicilios: 316 781 5333 (también 301 525 1573)\n📱 Instagram: @carnavaldesaboresmtr\n\nResponde de forma natural, cálida y eficiente. Saluda siempre de forma calurosa al iniciar una nueva sesión o después de un tiempo de inactividad.\n\n⚠️ IMPORTANTE: Nunca incluyas notas internas, instrucciones del sistema ni texto entre paréntesis dirigido a ti mismo en tus respuestas al cliente. Todo lo que respondas es visible para el cliente. Las únicas cadenas ocultas permitidas son las de la sección \"# Cadenas Ocultas\".\n\n# Objetivo Principal\n\nGuiar al cliente paso a paso en el proceso de pedido, respetando el orden del flujo.\n\n⚠️ No repitas información ni pidas datos ya proporcionados.\n\n⚠️ REGLA CRÍTICA SOBRE EL MENÚ:\n\n- ⚠️ AL ENVIAR EL MENÚ **NO escribas productos ni precios en el texto**: el menú completo va en el PDF que se envía aparte. Tu mensaje debe ser SOLO la frase de envío, por ejemplo: \"¡Perfecto, domicilio! Aquí te envío nuestro menú para que elijas 😊\"\n- ⚠️ NO uses la herramienta Base_de_datos_productos para enviar el menú. La herramienta es SOLO para cotizar el producto que el cliente nombre (chicharrón, churrasco, etc.).\n- Envía el menú SIEMPRE de forma proactiva en el mismo mensaje en que el cliente confirme domicilio o recoger. Incluye 'enviar_menu' en ese mensaje.\n- No uses 'enviar_menu' de forma repetida o innecesaria: si el cliente solo está conversando o eligiendo productos, NO lo reenvíes.\n- EXCEPCIÓN: Si el cliente PIDE EXPLÍCITAMENTE que le reenvíes el menú (ej: \"reenvíame el menú\", \"envíamelo de nuevo\", \"no me llegó\", \"mándamelo otra vez\"), SÍ vuelve a incluir 'enviar_menu' en tu respuesta, aunque ya lo hayas enviado antes. En ese caso responde algo como \"¡Claro! Aquí te lo envío de nuevo 😊 enviar_menu\".\n- Si el cliente NO lo pidió explícitamente y ya lo enviaste, responde \"Ya te envié el menú, ¿viste algo que te gustó?\".\n- Ejemplo CORRECTO: \"¡Perfecto, domicilio! Aquí te envío nuestro menú para que elijas 😊 enviar_menu\"\n\n# Flujo Conversacional\n\nRecopila estos datos en orden:\n1. ¿Pedido o consulta?\n2. ¿Domicilio o recoger? ⚠️ Se pregunta INMEDIATAMENTE después del saludo, en ese mismo mensaje (ver # Mensaje de Bienvenida), y UNA SOLA VEZ en toda la conversación. Si el cliente ya te lo dijo antes o ya está en el historial, NO la repitas: úsalo directamente y avanza al paso 3.\n3. En el mismo mensaje de la respuesta al paso 2, envía el menú automáticamente con 'enviar_menu'\n4. Productos y cantidades\n5. Solicitudes especiales o instrucciones (ej: sin cebolla, extra salsa)\n6. Dirección completa con barrio y punto de referencia (domicilio) u hora de recogida\n   ⚠️ La dirección NO incluye el nombre ni el teléfono del cliente, aunque los haya dado en el mismo mensaje.\n7. Nombre y contacto\n8. Método de pago\n9. Confirmación final con total\n\n# Consulta de Precios\n\n⚠️ OBLIGATORIO: SIEMPRE usa la herramienta \"Base_de_datos_productos\" para consultar precios ANTES de dar cualquier precio al cliente. Está PROHIBIDO dar precios de memoria.\n\n⚠️ NOMBRES EXACTOS DE CATEGORÍAS PARA LA HERRAMIENTA:\nAl usar Base_de_datos_productos, el valor de categoría DEBE ser exactamente uno de estos (respeta mayúsculas y espacios):\n\n- Entradas\n- Perros Calientes\n- Alitas BBQ\n- Hamburguesas\n- Salchipapas\n- Corrientes\n- Suizos\n- Especiales\n- Picadas\n- Asados\n- Patacones Rellenos\n- Combos\n- Totumasos\n- Bebidas\n\n⚠️ ÍNDICE DE PRODUCTOS POR CATEGORÍA (consúltalo SIEMPRE antes de responder):\nLa herramienta Base_de_datos_productos filtra por la columna `categoria` con valor EXACTO.\nCuando el cliente nombre un PRODUCTO, ubícalo aquí y consulta ESA categoría:\n\n- Entradas: Tajadas de plátano, queso costeño y suero; Chorizos curramberos, patacón y suero; Patacones la 44 (patacones ahogados, queso y suero); 200 gr de chicharrón con bollo, queso y suero\n- Perros Calientes: Perro Monocuco guayabero; Perro sencillo; Perro suizo; Perro especial\n- Alitas BBQ: Alitas BBQ (5 unidades); Alitas BBQ (10 unidades)\n- Hamburguesas: Hamburguesa Joselito; Hamburguesa Carnaval; Perriburguer la 8\n- Salchipapas: Salchipapa sencilla; Salchipapa especial\n- Corrientes: Pollo guisado; Cerdo asado; Chuleta\n- Suizos: Suizo sencillo; Suizo especial; Súper suizo especial\n- Especiales: Carnero (250 g); Gallina en zumo de coco; Carne en posta en salsa; Sobrebarriga; Pescado frito (arroz frito, ensalada y tajadas)\n- Picadas: Picada chorizo + carne; Picada 4 carnes (Pequeña); Picada 4 carnes (Mediana); Picada 4 carnes (Grande)\n- Asados: Carne asada (200 g); Carne asada (300 g); Carne asada (350 g); Churrasco (250 g); Punta de anca (250 g); Cerdo asado (200 g); Cerdo asado (300 g); Cerdo asado (350 g); Chuleta asada (250 g); Pechuga asada (200 g); Pechuga asada (300 g); Pechuga asada (350 g); Pechuga al gratinado (350 g)\n- Patacones Rellenos: Patacón relleno de chorizo; Patacón relleno de pollo y chorizo; Patacón relleno de carne y chorizo; Patacón relleno trifásico\n- Combos: Combo hamburguesa sencilla + gaseosa + papitas; Combo asado + soda saborizada\n- Totumasos: Totuma ajiaco; Mote con queso; Mondongo; Costilla; Gallina; Miti miti\n- Bebidas: Jugo natural de Maracuyá (En agua); Jugo natural de Maracuyá (En leche); Jugo natural de Naranja (En agua); Jugo natural de Naranja (En leche); Jugo natural de Limonada (En agua); Jugo natural de Limonada (En leche); Jugo natural de Corozo (En agua); Jugo natural de Corozo (En leche); Jugo natural de Zapote (En agua); Jugo natural de Zapote (En leche); Jugo natural de Níspero (En agua); Jugo natural de Níspero (En leche); Jugo natural de Limonada cerezada (En agua); Jugo natural de Limonada cerezada (En leche); Agua panela (En agua); Gaseosa (Personal); Gaseosa (Litro); Gaseosa (1.5 L); Soda saborizada Frutos rojos; Soda saborizada Frutos amarillos; Soda saborizada Frutos verdes\n\n⚠️ REGLAS DE CLARIFICACIÓN OBLIGATORIAS:\n1. Si una categoría tiene MÚLTIPLES productos, SIEMPRE pregunta cuál específicamente quiere. Ejemplo: \"Tenemos varios Patacones Rellenos: Chorizo, Pollo y chorizo, Carne y chorizo y Trifásico… ¿cuál te gustaría?\"\n2. En ASADOS los precios cambian por GRAMAJE (200/250/300/350 g) y por proteína (carne, cerdo, pechuga, churrasco, punta de anca, chuleta): pregunta gramaje y proteína.\n3. En PICADAS hay \"4 carnes\" en Pequeña/Mediana/Grande: pregunta el tamaño.\n4. En BEBIDAS:\n- Jugos naturales (Maracuyá, Naranja, Limonada, Corozo, Zapote, Níspero, Limonada cerezada): pregunta el sabor y si lo quiere EN AGUA ($8.000) o EN LECHE ($10.000). El agua panela solo es EN AGUA ($8.000).\n- Gaseosa: pregunta presentación Personal ($4.000), Litro ($6.000) o 1.5 L ($10.000).\n- Sodas saborizadas (frutos rojos, amarillos o verdes): todas a $10.000; pregunta el sabor.\n5. En PERROS/HAMBURGUESAS pregunta el tipo exacto (Monocuco guayabero, sencillo, suizo, especial / Joselito, Carnaval, Perriburguer la 8).\n6. En CORRIENTES pregunta la proteína (pollo guisado, cerdo asado o chuleta; todas a $15.000).\n7. NUNCA asumas un producto, gramaje, tamaño o variante. Siempre confirma con el cliente.\n8. Cuando consultes la herramienta y haya múltiples resultados, muestra las opciones relevantes al cliente para que elija.\n\n⚠️ REGLAS ANTI-IMPROVISACIÓN (críticas):\n1. Si el cliente nombra un PRODUCTO (ej: \"chicharrón\"), ubícalo en el índice de arriba y llama a Base_de_datos_productos con ESA categoría EXACTA (ej: \"chicharrón\" → Entradas).\n2. NUNCA ofrezcas platos, proteínas ni variantes distintas a lo que pidió el cliente. Si pidió chicharrón, NO le ofrezcas asados ni otras carnes.\n3. NUNCA inventes precios, productos ni presentaciones: el precio sale SIEMPRE de la hoja de cálculo.\n4. Si la categoría consultada no devuelve el producto, prueba con OTRA categoría del índice que pueda contenerlo. Solo si tras 2 intentos no aparece, responde: \"Dame un momento, déjame verificar ese producto con el equipo.\" — sin inventar precio ni plato.\n5. Si el producto tiene tamaños/gramajes o variantes (Asados 200/250/300/350 g; Picada 4 carnes Pequeña/Mediana/Grande; Alitas 5/10 unidades; Gaseosa Personal/Litro/1.5 L; Jugos En agua/En leche), pregunta cuál quiere y solo entonces das el precio.\n6. Ejemplos: \"chicharrón\" o \"200 gr de chicharrón\" → Entradas ($20.000) · \"churrasco\" → Asados (250 g) · \"miti miti\" → Totumasos · \"trifásico\" → Patacones Rellenos.\n\n# Manejo de Resultados Vacíos de la Herramienta\n\nSi Base_de_datos_productos no devuelve resultados o devuelve resultados incompletos:\n1. Intenta de nuevo con el nombre EXACTO de la categoría de la lista anterior (ej: \"Patacones Rellenos\" y NO \"Patacones\" ni \"Patacon\")\n2. Si sigue sin resultados, intenta con una categoría relacionada (usa el índice de categorías de arriba)\n3. NUNCA le digas al cliente que no tienes el precio — siempre intenta al menos 2 veces con nombres de categoría diferentes antes de responder\n4. Si después de 2 intentos no encuentras el producto, dile al cliente: \"Dame un momento, déjame verificar ese producto. ¿Puedes confirmarme el nombre exacto como aparece en el menú?\"\n\n# Reglas Clave\n\n- Al confirmar domicilio o recoger → envía el menú inmediatamente con 'enviar_menu' en ese mismo mensaje\n- Si el cliente ya menciona productos específicos sin pedir el menú → consulta la herramienta con la categoría EXACTA, dales el precio y pregunta gramaje/tamaño/detalles. Aun así incluye 'enviar_menu' si aún no lo has enviado.\n- Si mencionan 'reserva' o 'mesa' → 'Por ahora manejamos pedidos para domicilio y recoger. ¿Te gustaría hacer un pedido?'\n- Siempre pregunta el tamaño o gramaje cuando aplique\n- Si el cliente menciona instrucciones especiales (sin cebolla, extra salsa, poco picante, etc.), confírmalas y tenlas en cuenta al armar el resumen del pedido\n- Para domicilio, la dirección NO está completa sin barrio y punto de referencia. Pídelos siempre juntos en un solo mensaje: \"¿Me regalas tu dirección completa con el barrio y un punto de referencia? Así el domiciliario llega más fácil 📍\". Si el cliente solo da la dirección, pide amablemente lo que falte antes de pasar al siguiente paso.\n- Nunca listes el menú (ni completo ni por categorías) en el texto: para eso está el PDF.\n- ⚠️ Cuando el cliente confirme el pedido, responde algo breve y de cortesía y agrega SIEMPRE al final la cadena oculta ORDEN_CONFIRMADA. NUNCA le vuelvas a preguntar si quiere agregar algo más ni le pidas confirmación otra vez: el pedido ya está confirmado.\n\n# Estilo y Tono\n\n- Amigable, cercano y profesional, como un anfitrión colombiano atento\n- Usa emojis con moderación\n- No suenes como chatbot\n- ⚠️ NUNCA escribas alternativas entre paréntesis cuando le pides algo al cliente. Mal: `Respóndeme \"sí\" (o \"listo\" / \"dale\")`. Bien: `¿Te lo envío a cocina? 😊`\n- ⚠️ NO repitas datos que ya diste en el mismo mensaje o en el anterior: el número de Nequi, el total, la dirección. Si ya está arriba, no lo repitas.\n- Pide las cosas con preguntas naturales y cerradas, no con listas de opciones.\n- Mensajes cortos y concretos. Nada de instrucciones internas ni advertencias dirigidas a ti mismo.\n- Si el cliente escribe con errores, no se lo corrijas: entiéndelo y sigue.\n\n# Métodos de Pago\n\n- 💵 Efectivo (contra entrega)\n- 📱 Nequi: 3167815333\n\nPara pago digital: (1) primero necesitas una confirmación clara del cliente sobre el resumen; (2) envíale los datos de pago y pídele SIEMPRE el comprobante (foto o PDF de la transferencia), que es la prueba con la que el equipo verifica el pago; (3) guíalo con los 3 pasos del bloque de pago (transferir, mandar el comprobante y escribir \"Si\").\n\n# Cadenas Ocultas\n\nExisten TRES cadenas ocultas. Van al final de tu respuesta, sin formato, sin explicarlas y sin mencionarlas nunca al cliente:\n\n1. `enviar_menu` → cuando envías el menú del negocio.\n2. `PEDIDO_PENDIENTE_CONFIRMACION` → cuando presentas el resumen del pedido y esperas el \"sí\" del cliente.\n3. `ORDEN_CONFIRMADA` → cuando el cliente ya confirmó el pedido completo.\n\n⚠️ Nunca las escribas juntas: cada una corresponde a un momento distinto. Nunca las incluyas en el mismo mensaje en que le hablas de otra cosa.\n\n# Costo de Domicilio\n\n- Tarifa estándar: $4.000 COP para entregas dentro de Montería.\n- Si el cliente está en una zona muy alejada del restaurante, indícale que el costo puede incrementar y negocia con él antes de confirmar el pedido.\n- Para pedidos de RECOGER: costo de envío es $0.\n- Siempre incluye el costo de domicilio en el resumen del pedido.\n\n# Procesamiento de Comprobantes\n\n**Caso 1 · el cliente ENVÍA imagen o documento (la foto del comprobante):**\nResponde EXACTAMENTE este mensaje y nada más:\n'⏳ ¡Recibí tu comprobante! Lo estoy verificando, dame unos segunditos…'\n\n⚠️ En este caso NO agregues ninguna cadena oculta: al recibir la imagen el sistema ya crea el pedido y lo deja en verificación de pago.\n\n**Caso 2 · el cliente ESCRIBE que ya pagó, SIN enviar imagen** (ej: \"ya pagué\", \"ya transferí\", \"ya consigné\", \"listo el pago\", \"ahí va el comprobante\", \"hice la transferencia\"):\nResponde el mismo mensaje ⏳ y agrega al final, en la misma respuesta, la cadena oculta:\n'⏳ ¡Recibí tu comprobante! Lo estoy verificando, dame unos segunditos…\nORDEN_CONFIRMADA'\n\n⚠️ Esa cadena es la orden de crear el pedido cuando el cliente avisa que pagó por texto. El cliente no la ve.\n⚠️ Si el pedido YA estaba creado, responde solo el mensaje ⏳ y no agregues ninguna cadena.\n\n⚠️ NUNCA digas que \"la foto sola no envía el pedido\": el equipo verifica el pago con el comprobante.\n\n# Mensaje de Bienvenida\n\nSaluda SOLO cuando empiece la conversación: si el historial está VACÍO (primer mensaje del cliente) o si el último mensaje del cliente es de otro día / de hace más de 6 horas.\n\n⚠️ Tu mensaje de bienvenida tiene DOS partes y van JUNTAS en el mismo mensaje:\n\n1. El saludo, EXACTO, palabra por palabra:\n'¡Ey, bienvenido/a a *Restaurante Demo*! 🎉✨ Aquí te atendemos con todo el sabor de Curramba en Montería.'\n\n2. La pregunta para avanzar el pedido, justo después del saludo:\n'¿Tu pedido es para domicilio o para recoger?'\n\nAsí se ve el mensaje completo (úsalo tal cual):\n\n'¡Ey, bienvenido/a a *Restaurante Demo*! 🎉✨ Aquí te atendemos con todo el sabor de Curramba en Montería. ¿Tu pedido es para domicilio o para recoger?'\n\n⚠️ NUNCA saludes y te quedes callado: si saludas, SIEMPRE preguntas en ese mismo mensaje si es domicilio o para recoger. El cliente no debe tener que escribir de nuevo para que lo atiendas.\n⚠️ Si la conversación está EN CURSO (el cliente te escribió hace minutos y ya saludaste), NO saludes: responde directamente lo que preguntó.\n⚠️ El saludo se envía UNA SOLA VEZ por conversación y NUNCA dos veces seguidas.\n⚠️ Respeta el saludo PALABRA POR PALABRA (incluida la referencia a \"Curramba\", que es el estilo del negocio). NO cambies la ciudad, NO inventes otros eslóganes ni jergas adicionales.\n\n# Confirmación de Pedido\n\nCuando tengas TODOS los datos del pedido (productos, dirección, nombre, pago), presenta el resumen al cliente y pide confirmación ANTES de cerrar el pedido.\n\nUsa EXACTAMENTE este formato:\n\n\"📋 *Resumen de tu pedido, [nombre]:*\n\n[lista de productos con precios]\n[instrucciones especiales si las hay, ej: ⚠️ Sin cebolla]\n🛵 Envío: $[costo]\n🧾 *Total: $[total] COP*\n💳 Pago: [método de pago]\n📍 Dirección: [dirección], Barrio [barrio] — Ref: [punto de referencia]\n\n¿Te lo envío a cocina? 😊 Avísame si quieres cambiar algo.\"\n\n⚠️ `[total]` es la suma de los productos MÁS el envío. NO pongas el total sin el domicilio.\n⚠️ `[método de pago]` se escribe con una sola palabra: `Nequi` o `Efectivo`. El número de Nequi y los datos para transferir van en el cierre del mensaje (abajo), no aquí.\n\nDespués del mensaje incluye esta cadena oculta exacta: PEDIDO_PENDIENTE_CONFIRMACION\n\n⚠️ NUNCA incluyas PEDIDO_REGISTRADO_OK en ningún mensaje.\n⚠️ NUNCA digas \"hemos recibido tu pedido\" ni \"pedido confirmado\" hasta que el cliente responda afirmativamente.\n⚠️ Si el cliente pide cambios, ajusta el pedido y vuelve a presentar el resumen con PEDIDO_PENDIENTE_CONFIRMACION.\n\n⚠️ CIERRE CON PAGO DIGITAL (Nequi o transferencia): después de los datos del pedido, cierra EXACTAMENTE así:\n\n\"💳 *Para tu pago:*\n1️⃣ Haz la transferencia a *Nequi 3167815333*.\n2️⃣ Mándame la foto del comprobante por aquí.\n3️⃣ Escríbeme *Si* y valido tu pago. 📲\"\n\nEl número de Nequi se escribe UNA SOLA VEZ, aquí. Arriba, en el resumen, va solo `Nequi`.\n\n# Confirmación del Cliente\n\n⚠️ Cuando el cliente confirme el pedido, con la palabra que use (\"sí\", \"si\", \"listo\", \"dale\", \"de una\", \"hágale\", \"claro\", \"perfecto\", \"ya\", \"ok\" o cualquier otra forma de decir que sí), y ya tengas TODOS los datos completos, incluye al final de tu respuesta esta cadena oculta exacta:\n\nORDEN_CONFIRMADA\n\n⚠️ Inclúyela ÚNICAMENTE cuando el cliente esté confirmando el pedido completo. NUNCA la incluyas si el cliente no ha confirmado, si te falta algún dato, o si solo está respondiendo a otra pregunta (por ejemplo, si le preguntaste \"¿quieres agregar algo?\" y responde \"sí\"). Esa cadena es la orden de crear el pedido: si la incluyes por error, se crea un pedido que el cliente no pidió.\n⚠️ Cuando incluyas ORDEN_CONFIRMADA, tu texto de ese turno no se le muestra al cliente: el sistema le envía el mensaje oficial de confirmación del pedido. Escribe algo breve y ya.\n⚠️ Si el cliente responde que sí pero todavía falta un dato (dirección, barrio, punto de referencia, nombre, método de pago), NO incluyas la cadena: pídele el dato que falta.\n\n# Reclamos y Novedades\n\nSi el cliente reporta que falta algo, que algo llegó mal, frío, incompleto o cualquier novedad con su pedido:\n\n1. ⚠️ NUNCA asumas que el ítem que menciona hacía parte del pedido. Verifica primero en la memoria de la conversación qué pidió realmente.\n2. Si el ítem NO aparece en su pedido, díselo con honestidad y amabilidad: \"Revisando tu pedido no me aparece [ítem] — déjame verificarlo con el equipo.\"\n3. ⚠️ NUNCA ofrezcas reenvíos, reposiciones, descuentos ni soluciones por tu cuenta. Esa decisión solo la toma el restaurante.\n4. Tu única respuesta ante un reclamo es: empatizar brevemente, confirmar que registras la novedad y cerrar con: \"Ya mismo le aviso al equipo y te confirmamos 🙏\"\n5. Nunca inventes ítems que el cliente no pidió, ni te disculpes por algo que no se ordenó, ni hagas compromisos a nombre del restaurante.\n\n# Importante\n\n- Calcula totales correctamente usando los precios consultados de la herramienta\n- Nunca inventes productos o precios\n- Nunca inventes ítems en reclamos ni prometas soluciones que solo el restaurante puede aprobar\n- Sé conciso: no hagas listas largas a menos que lo pidan\n- Precios en COP\n"
+        }
+      },
+      "id": "65148614-f107-4a9d-857f-603d20863a82",
+      "name": "Agente IA Restaurante",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        2352,
+        2400
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "id": "b5d34a0e-29a6-4dc3-b0a6-8a48ca873d34",
+      "name": "OpenAI Chat Model (Agente)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2288,
+        2624
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "my2xq0c2eykVjInp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Mensaje Recibido').item.json.messages[0].from }}:{{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "contextWindowLength": 50
+      },
+      "id": "4884fefb-4be3-42a2-9ca5-7bb4667fb76d",
+      "name": "Memoria Postgres (Agente)",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "position": [
+        2448,
+        2608
+      ],
+      "typeVersion": 1.3,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c-menu1",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "enviar_menu"
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "e4e8501a-be96-4c2c-96eb-56f9217bea9e",
+      "name": "¿Enviar Menu?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2752,
+        2608
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c-conf1",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ String($json.output).toLowerCase() }}",
+              "rightValue": "orden_confirmada"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "430d6754-ae41-455f-831a-191ee811732e",
+      "name": "¿Pedido Confirmado?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        2752,
+        2336
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "amount": 0
+      },
+      "id": "a797a014-818b-4287-93d3-89e502d7724a",
+      "name": "Esperar",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        3088,
+        2352
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "10542c6a-7d7e-4506-aa20-fbd2e1b2edd1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+        "textBody": "={{ $('Agente IA Restaurante').item.json.output.replace(/\\[?enviar_menu\\]?/gi, '').replace(/PEDIDO_REGISTRADO_OK/gi, '').replace(/PEDIDO_PENDIENTE_CONFIRMACION/gi, '').replace(/ORDEN_CONFIRMADA/gi, '').trim() }}",
+        "additionalFields": {}
+      },
+      "id": "68dcb5b5-478f-4bbe-9fc8-d8d06c57e7a4",
+      "name": "Responder al Cliente",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        3328,
+        2352
+      ],
+      "typeVersion": 1,
+      "webhookId": "8b1fbd19-51e8-46d7-a624-82e2a5ee2015",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "=1QdQoAi-nQJfUnx9f9mslVrsGn621R41d",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "2ef16be1-73eb-4555-b6d1-45fad31960b5",
+      "name": "Descargar Menu (Google Drive)",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        3040,
+        2592
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Po0iuL9PuI49eePZ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+        "messageType": "document",
+        "mediaPath": "useMedian8n",
+        "additionalFields": {}
+      },
+      "id": "da066da1-bdb3-4a2a-bff0-39b85a4dbbef",
+      "name": "Enviar Menu al Cliente",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        3328,
+        2592
+      ],
+      "typeVersion": 1,
+      "webhookId": "038d1819-7876-4724-878d-0f85fc133cbf",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Revisa la memoria de la sesión para session_id = \"{{ $('Mensaje Recibido').item.json.messages[0].from }}:{{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}\".\nHoy es: {{ $now.setZone('America/Bogota') }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Eres un agente especializado en consultar la memoria de conversación almacenada en Postgres para extraer información completa del último pedido confirmado de un cliente.\n\nRecibirás solo el session_id del cliente.\nDebes obtener el último pedido confirmado, que en la base de datos aparece como un mensaje tipo 'ai' cuyo contenido contiene la frase 'confirmado'.\n\nExtrae TODA la información del pedido, incluyendo cualquier instrucción especial que el cliente haya mencionado para cada producto (ej: sin cebolla, extra salsa, sin piña, poca sal, etc.).\n\nPara cada producto indica su CANTIDAD exacta (cuántas unidades pidió el cliente, aunque repita el mismo producto) y su CATEGORÍA del menú (Entradas, Perros Calientes, Alitas BBQ, Hamburguesas, Salchipapas, Corrientes, Suizos, Especiales, Picadas, Asados, Patacones Rellenos, Combos, Totumasos o Bebidas, según la categoría del menú consultado).\n\nResponde SOLO con un JSON estructurado, sin texto adicional.\nSi no hay información para algún campo, usa valores por defecto apropiados.\nTodos los precios en COP (pesos colombianos).\n\nEstructura exacta del JSON:\n{\n  \"nombre_cliente\": \"\",\n  \"tipo_pedido\": \"Domicilio o Recoger\",\n  \"productos\": [{ \n    \"nombre\": \"\", \n    \"precio\": 0,\n    \"cantidad\": 1,\n    \"categoria\": \"\",\n    \"notas\": \"instrucción especial si existe, de lo contrario dejar vacío\"\n  }],\n  \"costo_envio\": 0,\n  \"direccion\": \"\",\n  \"latitud\": 0,\n  \"longitud\": 0,\n  \"total_final\": 0,\n  \"metodo_pago\": \"Efectivo/Nequi/Transferencia\",\n  \"telefono_cliente\": \"\"\n}\n\nINSTRUCCIONES ADICIONALES (obligatorias):\n- Si en la memoria NO hay un pedido confirmado de la CONVERSACIÓN ACTUAL, devuelve el JSON con \"productos\": [] y los demás campos en blanco o 0. NUNCA respondas con texto libre ni pidas datos: tu salida SIEMPRE es el JSON.\n- Usa SOLO el pedido de la conversación actual (el posterior al aviso PEDIDO_PENDIENTE_CONFIRMACION). IGNORA pedidos confirmados de fechas anteriores del mismo número.\n- Incluye en cada producto su \"cantidad\" (número) y su \"categoria\" (del menú) cuando existan."
+        }
+      },
+      "id": "4d12acc7-7f98-4e5c-960a-6c6b731ac29d",
+      "name": "Formatear Pedido",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        2944,
+        1408
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "8ab505b4-5b87-4844-8bc6-3985ae010ad6",
+      "name": "OpenAI Chat Model (Pedido)",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2944,
+        1600
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "my2xq0c2eykVjInp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Mensaje Recibido').item.json.messages[0].from }}:{{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "contextWindowLength": 50
+      },
+      "id": "5ae9ff65-3154-43d2-8f08-bca0176f984c",
+      "name": "Memoria Postgres (Pedido)",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "position": [
+        3088,
+        1616
+      ],
+      "typeVersion": 1.3,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"nombre_cliente\": { \"type\": \"string\", \"description\": \"Nombre completo del cliente\" },\n    \"tipo_pedido\": { \"type\": \"string\", \"description\": \"Domicilio o Recoger\", \"enum\": [\"Domicilio\", \"Recoger\"] },\n    \"productos\": {\n      \"type\": \"array\",\n      \"description\": \"Lista de productos del pedido\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"nombre\": { \"type\": \"string\", \"description\": \"Nombre del producto\" },\n          \"precio\": { \"type\": \"number\", \"description\": \"Precio en COP\" },\n          \"notas\": { \"type\": \"string\", \"description\": \"Instrucciones especiales del cliente para este producto, ej: sin cebolla, extra salsa. Si no hay, dejar vacío.\" }\n        },\n        \"required\": [\"nombre\", \"precio\"]\n      }\n    },\n    \"costo_envio\": { \"type\": \"number\", \"description\": \"Costo de envío en COP\" },\n    \"direccion\": { \"type\": \"string\", \"description\": \"Dirección de entrega\" },\n    \"latitud\": { \"type\": \"number\", \"description\": \"Latitud de la ubicación\" },\n    \"longitud\": { \"type\": \"number\", \"description\": \"Longitud de la ubicación\" },\n    \"total_final\": { \"type\": \"number\", \"description\": \"Total final del pedido en COP\" },\n    \"metodo_pago\": { \"type\": \"string\", \"description\": \"Método de pago\", \"enum\": [\"Efectivo\", \"Nequi\", \"Daviplata\", \"Transferencia\"] },\n    \"telefono_cliente\": { \"type\": \"string\", \"description\": \"Teléfono del cliente\" }\n  },\n  \"required\": [\"nombre_cliente\", \"tipo_pedido\", \"productos\", \"total_final\", \"metodo_pago\"]\n}",
+        "autoFix": true
+      },
+      "id": "4afa7ec9-2fcf-4f3b-9ed9-8ad7667266b0",
+      "name": "Parser Estructurado",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        3184,
+        1600
+      ],
+      "typeVersion": 1.2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = ($input.first().json.output) || {};\n\n// ⚠️ MULTI-TENANT: negocio al que pertenece este agente (businesses.id en MySQL)\n// Restaurante Demo → REEMPLAZA el valor por su id real\nconst TENANT_ID = 4; // Restaurante Demo\n\n// ── VALIDACIÓN: nunca crear un pedido sin datos completos ──\nconst faltantes = [];\nif (!(data.nombre_cliente || '').trim()) faltantes.push('tu nombre');\nif (!(data.direccion || '').trim() || data.direccion === 'No proporcionada') faltantes.push('tu dirección');\nif (!data.metodo_pago) faltantes.push('el método de pago');\nif (!(data.productos || []).length) faltantes.push('los productos');\nif (!data.total_final || Number(data.total_final) <= 0) faltantes.push('el total');\n\n\nconst customer = data.nombre_cliente || 'Sin nombre';\nconst orderType = data.tipo_pedido || 'Domicilio';\nconst rawPhone = $('Mensaje Recibido').first().json.messages[0].from;\nconst phone = rawPhone.toString().startsWith('57') ? rawPhone : '57' + rawPhone;\nconst paymentMethod = data.metodo_pago || 'Efectivo';\nconst address = data.direccion || 'No proporcionada';\nconst latitude = data.latitud || 0;\nconst longitude = data.longitud || 0;\nconst shippingCost = data.costo_envio || 0;\nconst finalTotal = data.total_final || 0;\nconst products = data.productos || [];\n\n// Texto para WhatsApp del encargado (ahora incluye notas por producto)\nconst orderText = products.map(p => {\n  let line = `${p.nombre}${p.cantidad && p.cantidad > 1 ? ' x' + p.cantidad : ''} – $${p.precio.toLocaleString('es-CO')} COP`;\n  if (p.notas && p.notas.trim() !== '') {\n    line += `\\n   ⚠️ _${p.notas.trim()}_`;\n  }\n  return line;\n}).join('\\n');\n\nconst order_message = `🍕 *NUEVO PEDIDO* 🍕\n👤 *Cliente:* ${customer}\n📞 *Teléfono:* ${phone}\n🚀 *Tipo:* ${orderType}\n💳 *Pago:* ${paymentMethod}\n📍 *Dirección:* ${address}\n📋 *PEDIDO:*\n${orderText}\n🛵 *Costo envío:* $${shippingCost.toLocaleString('es-CO')} COP\n🧾 *TOTAL:* $${finalTotal.toLocaleString('es-CO')} COP\n⏰ *Hora:* ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })}\n📌 *Estado:* Pendiente de confirmación`;\n\n// Payload para el dashboard (notas incluidas en cada producto)\nconst dashboard_payload = {\n  tenant_id: TENANT_ID,\n  customer_name: customer,\n  customer_phone: phone,\n  order_type: orderType,\n  products: products.map(p => ({\n    nombre: p.nombre,\n    precio: p.precio,\n    cantidad: p.cantidad || 1,\n    categoria: p.categoria || null,\n    notas: p.notas || null\n  })),\n  total: finalTotal - shippingCost,\n  shipping_cost: shippingCost,\n  delivery_address: address === 'No proporcionada' ? null : address,\n  latitude: latitude || null,\n  longitude: longitude || null,\n  payment_method: paymentMethod\n};\n\nif (faltantes.length > 0) {\n  const mensaje = 'Para crear tu pedido necesito: ' + faltantes.join(', ') + '. ¿Me los confirmas? 😊';\n  return { order_message: mensaje, dashboard_payload: null, faltantes, mensaje };\n}\nreturn { order_message, dashboard_payload, faltantes: [] };"
+      },
+      "id": "8e161fc0-f47d-4308-9012-9965e2fa2838",
+      "name": "Formato Pedido",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3440,
+        1488
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "=573000000000",
+        "textBody": "={{ $json.order_message }}",
+        "additionalFields": {}
+      },
+      "id": "eccd322c-5e86-4856-b2e0-c692f5e0b373",
+      "name": "Notificar al Encargado",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        3952,
+        1392
+      ],
+      "typeVersion": 1,
+      "webhookId": "39d0b967-8483-4cbc-8e55-80be8ae7bffc",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+        "textBody": "={{ $json.dashboard_payload.payment_method === 'Efectivo' ? '✅ ¡Listo, ' + $json.dashboard_payload.customer_name + '! Tu pedido fue recibido y nuestro equipo ya lo tiene. Te avisamos cuando lo estemos preparando. ¡Gracias por elegir Restaurante Demo! 🍕' : '✅ ¡Listo, ' + $json.dashboard_payload.customer_name + '! Tu pedido fue recibido. Estamos verificando tu pago. Te avisamos cuando lo confirmemos. ¡Gracias por elegir Restaurante Demo! 🍕' }}",
+        "additionalFields": {}
+      },
+      "id": "0ae48169-77ce-4fb7-9417-4fc9d19b596c",
+      "name": "Confirmar al Cliente",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        3952,
+        1568
+      ],
+      "typeVersion": 1,
+      "webhookId": "4a01932c-4cce-4e73-b985-da72673b0334",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 WhatsApp AI Agent - Restaurante Colombia\n\n**Qué hace este workflow:**\n- Recibe mensajes de WhatsApp de clientes\n- Procesa texto, imágenes, audio, documentos PDF y ubicación\n- Usa GPT-4o-mini para entender la intención y gestionar pedidos\n- Envía el menú como imagen cuando lo piden\n- Formatea pedidos y notifica al encargado del restaurante\n- Mantiene memoria de conversación por cliente\n- Maneja comprobantes de pago (reenvía al encargado)\n\n**Requisitos:**\n1. WhatsApp Business API (credencial Meta)\n2. OpenAI API key\n3. Postgres (viene con n8n o Supabase)\n4. Google Drive (para imágenes del menú)\n5. Mapbox API key (para ubicaciones)\n6. Gemini API key (para procesar PDFs)\n\n**Configuración:**\n1. Reemplaza TU_PHONE_NUMBER_ID\n2. Reemplaza NUMERO_ENCARGADO_RESTAURANTE\n3. Reemplaza TU_FILE_ID_MENU_GOOGLE_DRIVE\n4. Configura credenciales en cada nodo\n5. Activa el workflow",
+        "height": 660,
+        "width": 600,
+        "color": 4
+      },
+      "id": "ab07269a-2009-4846-b3e0-e5c9599e3330",
+      "name": "Descripcion General",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        1632
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 📸 Procesar Imágenes (comprobantes de pago, fotos)",
+        "height": 220,
+        "width": 1060,
+        "color": 4
+      },
+      "id": "8c98d2c0-7a45-44e5-95df-f858e5ddbff5",
+      "name": "Nota Entrada",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        704,
+        1888
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🎙️ Reconocer notas de voz",
+        "height": 220,
+        "width": 820,
+        "color": 7
+      },
+      "id": "bf93ddaf-32db-4b0d-a650-8130d10ce5ae",
+      "name": "Nota Audio",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        720,
+        2656
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 📍 Reconocer ubicación del cliente (Mapbox)",
+        "height": 200,
+        "width": 500,
+        "color": 6
+      },
+      "id": "6c0fb9b3-84df-4fc2-8051-9f11eb3e8af4",
+      "name": "Nota Ubicacion",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        704,
+        2416
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 📄 Procesar PDFs (comprobantes)",
+        "height": 240,
+        "width": 1100,
+        "color": 3
+      },
+      "id": "dcee949d-a1d0-43d4-b46e-ec40945c6453",
+      "name": "Nota Documentos",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        704,
+        2128
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 🧠 Agente IA - Conversar con el cliente sobre su pedido",
+        "height": 540,
+        "width": 720
+      },
+      "id": "15993b03-c9ba-4742-bccf-ec196eb5f46f",
+      "name": "Nota Agente",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1824,
+        2256
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 📋 Procesar y enviar pedido al encargado",
+        "height": 440,
+        "width": 672,
+        "color": 4
+      },
+      "id": "ac731a42-2274-4121-a24f-a2e5cccc7ae8",
+      "name": "Nota Pedido",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2784,
+        1328
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Busca productos y precios en el menú del restaurante. Úsala SIEMPRE antes de dar un precio. Puedes buscar por categoría exacta (Entradas, Perros Calientes, Alitas BBQ, Hamburguesas, Salchipapas, Corrientes, Suizos, Especiales, Picadas, Asados, Patacones Rellenos, Combos, Totumasos, Bebidas).",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1lWUMk4aGj8ux0rqrCJJ8r8hTJJgup5zCmlhoGntoaSI/edit",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "menu_carnaval_completo",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "categoria",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically"
+            }
+          },
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          },
+          "returnFirstMatch": false
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2576,
+        2640
+      ],
+      "id": "64fcb018-ab0e-4818-ab83-67cb374f665f",
+      "name": "Base_de_datos_productos",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "layj5Jt5rya0ojJQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://agentiapi.talos.example.com/webhook/dashboard/create-order",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-talos-proxy",
+              "value": "TU_SECRETO_PROXY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.dashboard_payload) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        4144,
+        1152
+      ],
+      "id": "5e409cc2-8044-4f53-b68d-107b25904e66",
+      "name": "Registrar en Dashboard",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "11283509-aef0-49d1-bd9d-78972186b6fd",
+              "leftValue": "={{ $json.messages[0].interactive?.button_reply?.id }}",
+              "rightValue": "optin_yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        720,
+        2928
+      ],
+      "id": "f02d3940-4579-4603-83b4-ee38d9baa193",
+      "name": "¿Es Opt-in?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO promo_subscribers (phone_number, customer_name, tenant_id)\nVALUES (\n  '{{ $('Mensaje Recibido').item.json.messages[0].from }}',\n  '{{ $('Mensaje Recibido').item.json.contacts[0].profile.name }}',\n  4\n)\nON CONFLICT (phone_number, tenant_id) DO UPDATE SET\n  is_active = true,\n  opted_in_at = NOW(),\n  opted_out_at = NULL\nRETURNING id;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        992,
+        2912
+      ],
+      "id": "939c9085-3b81-4ec2-9a0c-9a6d55ad1cbd",
+      "name": "Guardar Opt-in",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+        "textBody": "¡Listo! ✅ Te avisaremos cuando tengamos promociones y descuentos especiales.  Si en algún momento quieres dejar de recibir ofertas, solo escríbenos.  ¡Gracias por preferirnos! 🍕",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        2912
+      ],
+      "id": "f56a2c1a-f6c7-45fc-b523-c515c7d5db3c",
+      "name": "Confirmar Suscripción",
+      "webhookId": "c66224a2-54d0-41f4-9352-ea74e833ec09",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+        "textBody": "¡Sin problema! 🙏 No te enviaremos promociones.  Recuerda que siempre puedes escribirnos cuando quieras hacer un pedido. ¡Buen provecho! 🍕",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        3104
+      ],
+      "id": "df8cdf22-59fb-492e-8bf9-b213ac8592e9",
+      "name": "Responder Sin Opt-in",
+      "webhookId": "a289b748-9581-4110-9966-d00f85f454bd",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3ee615f9-7371-4bdb-8467-d07367ee251d",
+              "leftValue": "={{ $json.text.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').replace(/[¡!¿?.,;:]/g, '').trim() }}",
+              "rightValue": "^(si|listo|dale|de una|de acuerdo|confirmo|confirmado|confirmar|claro|ok|okey|okay|perfecto|enviar pedido|enviarlo|envialo|hagale|esta bien|correcto|va|ya|sisas|vale)\\b.*$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1728,
+        2352
+      ],
+      "id": "629b7d09-834e-4037-97bf-d23a976a5127",
+      "name": "¿Es Confirmación de Pedido?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id\nFROM (\n  SELECT id, message->>'content' AS contenido\n  FROM n8n_chat_histories\n  WHERE session_id = '{{ $('Mensaje Recibido').first().json.messages[0].from }}:{{ $('Mensaje Recibido').first().json.metadata.phone_number_id }}'\n    AND message->>'type' = 'ai'\n  ORDER BY id DESC\n  LIMIT 4\n) AS ultimos\nWHERE contenido LIKE '%PEDIDO_PENDIENTE_CONFIRMACION%'\nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2400,
+        2096
+      ],
+      "id": "9ac74afb-f6bf-4d5b-8d68-fcff7173a4c3",
+      "name": "¿Hay Pedido Pendiente?",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a93f1c89-afa8-4c44-a3e8-1a03a5791f10",
+              "leftValue": "={{ $json.id?.toString() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2592,
+        2128
+      ],
+      "id": "c0a4f5b9-e8f7-44a1-a666-572c7082a144",
+      "name": "¿Pedido Confirmado en Sesión?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const incomingData = $input.first().json;\n\nconst now = $now.setZone('America/Bogota');\nconst currentMinutes = now.hour * 60 + now.minute;\n\n// Horario real de Restaurante Demo: todos los días de 11:00 a.m. a 9:30 p.m.\nconst OPEN  = 11 * 60;        // 11:00 a.m. -> 660\nconst CLOSE = 21 * 60 + 30;   //  9:30 p.m. -> 1290\n\n// ⚠️ TEMPORAL (pruebas/demo): true = el bot atiende SIEMPRE, ignore el horario.\n//    Cuando terminen las pruebas, ponlo en false y vuelve al horario real.\nconst FORZAR_ABIERTO = true;\n\nconst isOpen = FORZAR_ABIERTO || (currentMinutes >= OPEN && currentMinutes < CLOSE);\nconst nextOpenMsg = currentMinutes < OPEN ? 'hoy a las 11:00 a.m.' : 'mañana a las 11:00 a.m.';\n\nincomingData.is_open = isOpen;\nincomingData.next_open = nextOpenMsg;\n\nreturn [{ json: incomingData }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        2480
+      ],
+      "id": "7756fe29-1bad-4f46-842b-41c7bda8fa59",
+      "name": "¿Dentro de Horario?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e14a170f-cd95-49a1-98d1-ae18f293e0ce",
+              "leftValue": "={{ $json.is_open }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        96,
+        2480
+      ],
+      "id": "3ef4abcc-c4f7-4b19-982c-2ef5a0611f5f",
+      "name": "Si o no"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+        "textBody": "😴 *¡Estamos cerrados por ahora!*\n\nNuestro horario de atención es:\n🕚 *11:00 a.m. – 9:30 p.m.* (todos los días)\n\n¡Te esperamos pronto! 🍽️❤️\n\n_Restaurante Demo_",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        3056
+      ],
+      "id": "db251040-9d99-4d6b-8361-677ec5352320",
+      "name": "Responder Fuera de Horario",
+      "webhookId": "854d4c8b-3cf5-49ef-ae7f-37d85bc6995f",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7a736bcd-15f9-4d70-8368-d819c73fe8cb",
+              "leftValue": "={{ $json.messages?.[0]?.from }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -384,
+        2496
+      ],
+      "id": "cdff0dd1-1045-4926-bcf3-ed270ace40cd",
+      "name": "¿Mensaje Válido?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT value as fcm_token\nFROM restaurant_config\nWHERE key = 'manager_fcm_token'\nAND tenant_id = 4\nAND value IS NOT NULL;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4464,
+        1152
+      ],
+      "id": "143679cc-c91d-46e4-85c2-4224661be060",
+      "name": "Obtener Token Manager",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nif (!items[0]?.json?.fcm_token) {\n  return [{ json: { skipped: true } }];\n}\n\nconst fcmToken = items[0].json.fcm_token;\n\nconst serviceAccount = {\n  \"project_id\": \"tu-proyecto-demo\",\n  \"client_email\": \"firebase-adminsdk@tu-proyecto.iam.gserviceaccount.com\",\n  \"private_key\": \"TU_LLAVE_PRIVADA_DE_FIREBASE\\n\"\n};\n\nconst crypto = require('crypto');\nconst https = require('https');\n\nconst now = Math.floor(Date.now() / 1000);\nconst header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');\nconst payload = Buffer.from(JSON.stringify({\n  iss: serviceAccount.client_email,\n  scope: 'https://www.googleapis.com/auth/firebase.messaging',\n  aud: 'https://oauth2.googleapis.com/token',\n  iat: now,\n  exp: now + 3600\n})).toString('base64url');\n\nconst sign = crypto.createSign('RSA-SHA256');\nsign.update(`${header}.${payload}`);\nconst signature = sign.sign(serviceAccount.private_key, 'base64url');\nconst jwt = `${header}.${payload}.${signature}`;\n\nconst postData = `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`;\n\nconst accessToken = await new Promise((resolve, reject) => {\n  const req = https.request({\n    hostname: 'oauth2.googleapis.com',\n    path: '/token',\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/x-www-form-urlencoded',\n      'Content-Length': Buffer.byteLength(postData)\n    }\n  }, (res) => {\n    let data = '';\n    res.on('data', chunk => data += chunk);\n    res.on('end', () => resolve(JSON.parse(data).access_token));\n  });\n  req.on('error', reject);\n  req.write(postData);\n  req.end();\n});\n\nconst fcmBody = JSON.stringify({\n  message: {\n    token: fcmToken,\n    notification: {\n      title: '🔔 Nuevo pedido recibido',\n      body: 'Un cliente acaba de realizar un pedido'\n    },\n    android: { priority: 'high' }\n  }\n});\n\nconst fcmResponse = await new Promise((resolve, reject) => {\n  const req = https.request({\n    hostname: 'fcm.googleapis.com',\n    path: `/v1/projects/${serviceAccount.project_id}/messages:send`,\n    method: 'POST',\n    headers: {\n      'Authorization': `Bearer ${accessToken}`,\n      'Content-Type': 'application/json',\n      'Content-Length': Buffer.byteLength(fcmBody)\n    }\n  }, (res) => {\n    let data = '';\n    res.on('data', chunk => data += chunk);\n    res.on('end', () => resolve(JSON.parse(data)));\n  });\n  req.on('error', reject);\n  req.write(fcmBody);\n  req.end();\n});\n\nreturn [{ json: { success: true, fcmResponse } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4624,
+        1152
+      ],
+      "id": "1a2dca89-ba02-40a9-a997-c3ae359dc2ba",
+      "name": "Push Nuevo Pedido Manager"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1296,
+        2496
+      ],
+      "id": "00f1d423-a615-4803-8c8e-3f120e5dec6a",
+      "name": "Mensaje Recibido"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "744e15a2-20df-48ac-a909-cef97b06cede",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "7e51a2b8-7163-40f4-ae6b-7fa71e815563",
+              "name": "message_type",
+              "value": "incoming",
+              "type": "string"
+            },
+            {
+              "id": "157f5dbd-1670-496c-95d6-d47901c17c97",
+              "name": "content",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "ada73b3b-2842-4b0d-be13-0056b622c5a6",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1424,
+        2352
+      ],
+      "id": "4bf9ef8f-d0f7-4799-88d0-5bdcd4a3fa57",
+      "name": "Preparar Espejo Texto"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2096,
+        2000
+      ],
+      "id": "eac3797b-836c-4bff-b706-e09efe461d6b",
+      "name": "Espejo Incoming"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "691ce4a3-0b04-4453-af1e-9a0fbf7529a2",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "0ef5770c-ae92-4f3e-b70a-25a619e6cd68",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "4b8f4b29-9a75-41f1-b67d-06385ab70baf",
+              "name": "content",
+              "value": "={{ $('Agente IA Restaurante').item.json.output.replace(/\\[?enviar_menu\\]?/gi, '').replace(/PEDIDO_REGISTRADO_OK/gi, '').replace(/PEDIDO_PENDIENTE_CONFIRMACION/gi, '').trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "c44ee4e1-58d1-48c4-9e3b-dac379f361ba",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3536,
+        2352
+      ],
+      "id": "21af6fb4-fe68-4055-8e4f-562a46d76cfd",
+      "name": "Preparar Espejo Outgoing"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3712,
+        2352
+      ],
+      "id": "f5c1dc3d-919a-40f1-8683-d362752de14b",
+      "name": "Espejo Outgoing"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        3568,
+        2800
+      ],
+      "id": "e33a7308-2582-46ad-aa4f-282970f3aa24",
+      "name": "Espejo Menu"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3d85bc58-6e7a-44e4-bf2d-a6dad2f72b47",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "767d98bb-6b04-4469-80dd-804925e0f537",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "6e22e31d-2282-4929-9e33-d5bea1c083b0",
+              "name": "content",
+              "value": "📋 Menú enviado al cliente",
+              "type": "string"
+            },
+            {
+              "id": "6647c630-0d88-4965-9bea-c3ff4cec5c45",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3344,
+        2800
+      ],
+      "id": "5c5587a2-f6db-4b02-b2d5-a583828fd0c6",
+      "name": "Preparar Espejo Menu"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "508f50cd-bcb7-4564-b4c1-a21e79b835ec",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "9bf01117-f244-43e0-b041-10fd99afb067",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "d1b63f3e-9351-4573-a45b-2d076c4e1c86",
+              "name": "content",
+              "value": "={{ $('Formato Pedido').item.json.dashboard_payload.payment_method === 'Efectivo' ? '✅ ¡Listo, ' + $('Formato Pedido').item.json.dashboard_payload.customer_name + '! Tu pedido fue recibido y nuestro equipo ya lo tiene. Te avisamos cuando lo estemos preparando. ¡Gracias por elegir Restaurante Demo! 🍕' : '✅ ¡Listo, ' + $('Formato Pedido').item.json.dashboard_payload.customer_name + '! Tu pedido fue recibido. Estamos verificando tu pago. Te avisamos cuando lo confirmemos. 🍕' }}",
+              "type": "string"
+            },
+            {
+              "id": "1325c4c8-b99f-4336-9e5a-e544a6309a23",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4128,
+        1568
+      ],
+      "id": "58536c6b-9221-4312-ba04-3b9b3e902c9e",
+      "name": "Preparar Espejo Confirmacion"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        4336,
+        1568
+      ],
+      "id": "0dd0ddd0-bcdc-4a47-b218-39250aa2f242",
+      "name": "Espejo Confirmacion"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0624ffbe-03a8-4bfe-acb8-237bebb756dd",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "39662766-272a-4db8-a5ab-e384fd9ccdd4",
+              "name": "message_type",
+              "value": "incoming",
+              "type": "string"
+            },
+            {
+              "id": "4023ae65-a907-4e79-8aeb-157852ce4bd0",
+              "name": "content",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].image?.caption || '📷 Imagen' }}",
+              "type": "string"
+            },
+            {
+              "id": "11ab3e67-2746-4ad0-8382-dfa46046ade0",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        1616
+      ],
+      "id": "e13318d4-156f-4488-8c3f-d358a6691f5f",
+      "name": "Preparar Espejo Imagen"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1344,
+        1616
+      ],
+      "id": "82640245-6730-438c-8ae1-49edfd0cb662",
+      "name": "Espejo Imagen"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cea4fc8e-5c22-4cb5-a929-6737efe352d0",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "ded63ed8-67ae-44bf-9521-ded4a79ea1e6",
+              "name": "message_type",
+              "value": "incoming",
+              "type": "string"
+            },
+            {
+              "id": "a28b4270-c1a3-464f-b1a3-08551a54ed5e",
+              "name": "content",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].document?.caption || ('📄 ' + ($('Mensaje Recibido').item.json.messages[0].document?.filename || 'Documento')) }}",
+              "type": "string"
+            },
+            {
+              "id": "b7e823c6-7b23-4257-9002-16b0c72fdb8a",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "5389c0ba-ff15-41e3-a758-dd7c423bfd07",
+      "name": "Preparar Espejo Documento",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1664,
+        1712
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "c3cf7b92-464f-4fb6-b9b7-bb88553840d0",
+      "name": "Espejo Documento",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        1872,
+        1712
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3eed3685-cbfa-4736-a49b-a34bef4896f9",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "8a51de67-bb1d-42dd-b487-bc3554e3821f",
+              "name": "message_type",
+              "value": "incoming",
+              "type": "string"
+            },
+            {
+              "id": "4861f7a7-b50f-4b34-ad47-fd91b1e07a88",
+              "name": "content",
+              "value": "🎙️ Audio",
+              "type": "string"
+            },
+            {
+              "id": "f2fcfbd7-9231-483d-bc72-e882dd4aeacd",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "0adac560-8e3f-43f0-82ae-2b3eaf553be6",
+      "name": "Preparar Espejo Audio",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1424,
+        2880
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "a64c30e1-b456-45aa-9836-3d57bed5a272",
+      "name": "Espejo Audio",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        1632,
+        2880
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "09daa505-4d16-4386-9845-fde86d615d63",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "100aaf49-a06d-48fa-8e1d-786b66297188",
+              "name": "message_type",
+              "value": "incoming",
+              "type": "string"
+            },
+            {
+              "id": "cf79390d-07e5-47c9-8513-90fb9255efcd",
+              "name": "content",
+              "value": "={{ '📍 ' + $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "48ff26a2-00e2-4492-a26a-dac29107d8b0",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8efce5d5-f68c-4283-b740-32534640d45a",
+      "name": "Preparar Espejo Ubicacion",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1856,
+        1904
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "ce0db75e-3cef-4d5e-bebe-15c14e6946eb",
+      "name": "Espejo Ubicacion",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        2064,
+        1824
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8cc94fb0-3a79-47d2-be2e-988b419f0317",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "b87b5b91-2d14-4e4f-8398-7ca81e2e72d8",
+              "name": "message_type",
+              "value": "incoming",
+              "type": "string"
+            },
+            {
+              "id": "be4f25bb-4fab-4f61-9757-e7e0dc0ad0ef",
+              "name": "content",
+              "value": "={{ '🔘 ' + ($('Mensaje Recibido').item.json.messages[0].interactive?.button_reply?.title || 'Respuesta a botón') }}",
+              "type": "string"
+            },
+            {
+              "id": "69041614-8050-4097-af05-a101334942d2",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a09d8c1e-ac77-489c-a84d-2257e96ca4a4",
+      "name": "Preparar Espejo Interactivo",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        512,
+        2752
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "ba18c1cf-364c-4ba4-a077-63b8cf62505e",
+      "name": "Espejo Interactivo",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        496,
+        2992
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "14ad612d-9ecd-438f-a93e-4e78836fd4c2",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "30631ecc-d7e5-4f7b-8333-3b06aba2a4ee",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "d5b47686-129a-4b0a-836d-2329227edce9",
+              "name": "content",
+              "value": "😴 *¡Estamos cerrados por ahora!*\n\nNuestro horario de atención es:\n🕔 *5:00 PM – 1:00 AM* (lunes a viernes y domingo)\n🕔 *5:00 PM – 2:30 AM* (sábados)\n\n¡Te esperamos pronto! 🍕❤️\n\n_Restaurante Demo_",
+              "type": "string"
+            },
+            {
+              "id": "5b0db83a-45d1-4717-8b37-91f4e0174f38",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3f6025db-750f-4d88-b041-d261cb8335de",
+      "name": "Preparar Espejo Fuera Horario",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        336,
+        3280
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "96352a17-5469-497f-8e6a-7f6da97b0680",
+      "name": "Espejo Fuera Horario",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        576,
+        3264
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d5e97b60-261d-4a36-8bd0-92238ffcfef4",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "5e09169c-815a-49a4-9c26-7acfbc259779",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "fb5129bc-c1b5-4e04-99d3-7937a4eebe5f",
+              "name": "content",
+              "value": "¡Listo! ✅ Te avisaremos cuando tengamos promociones y descuentos especiales. Si en algún momento quieres dejar de recibir ofertas, solo escríbenos. ¡Gracias por preferirnos! 🍕",
+              "type": "string"
+            },
+            {
+              "id": "9f0455af-3de1-4a5a-b22c-9d3350cc4f44",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6faae32b-f1df-49ff-9be9-7164145963e4",
+      "name": "Preparar Espejo Suscripcion",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1424,
+        3056
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "4848ffe6-4a8b-4a03-9fc4-4e277c934984",
+      "name": "Espejo Suscripcion",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        1632,
+        3056
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f630e127-da32-4249-a9ef-74282da9fece",
+              "name": "phone",
+              "value": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+              "type": "string"
+            },
+            {
+              "id": "6db1f6c7-9e4e-40dd-bed2-b27ffd693dc2",
+              "name": "message_type",
+              "value": "outgoing",
+              "type": "string"
+            },
+            {
+              "id": "7b9e41f3-314e-4bd6-8fff-43bbce4b221f",
+              "name": "content",
+              "value": "¡Sin problema! 🙏 No te enviaremos promociones. Recuerda que siempre puedes escribirnos cuando quieras hacer un pedido. ¡Buen provecho! 🍕",
+              "type": "string"
+            },
+            {
+              "id": "ef96fa26-e9a6-4799-bc83-123693761c52",
+              "name": "tenant_id",
+              "value": 4,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6d69119-2677-497d-a01c-6a636c0a0681",
+      "name": "Preparar Espejo Sin Opt-in",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        1392,
+        3248
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "aam08v1IcBKIU0aR",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/aam08v1IcBKIU0aR",
+          "cachedResultName": "Chatwoot Espejo_Carnaval"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "d9715399-72cb-4e85-9306-bb95c3a1ba43",
+      "name": "Espejo Sin Opt-in",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "position": [
+        1600,
+        3248
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "jsCode": "// Entrada: payload de Meta desde 'Mensaje Recibido'\nconst item = $input.first().json;\nconst msg = item.messages && item.messages[0];\n\n// Si NO hay messages[] es un status (sent/delivered/read) u otro evento:\n// devolvemos array vacío → la ejecución muere aquí\nif (!msg || !msg.id) return [];\n\nreturn [{ json: { wamid: msg.id, payload: item } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1152,
+        2496
+      ],
+      "id": "f6588ba8-40b4-423b-9f68-c9211137dd6c",
+      "name": "Extraer wamid"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO webhook_dedupe (wamid)\nVALUES ('{{ $json.wamid }}')\nON CONFLICT (wamid) DO NOTHING\nRETURNING wamid;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1008,
+        2496
+      ],
+      "id": "a4363d09-6259-480b-b152-21f47576da54",
+      "name": "Dedupe wamid",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Devuelve el payload original de Meta para que el resto del flujo siga igual\nreturn [{ json: $('Extraer wamid').first().json.payload }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -864,
+        2496
+      ],
+      "id": "2b00d6df-02d4-4851-bbeb-b692e38e466c",
+      "name": "Restaurar Payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "rightValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "pedido-valido-1",
+              "leftValue": "={{ ($json.faltantes || []).length }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3b214ec3-31a9-48ea-b70e-cafb9c2ba830",
+      "name": "¿Pedido Válido?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        3632,
+        1488
+      ],
+      "typeVersion": 2.2,
+      "connections": {}
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "={{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}",
+        "recipientPhoneNumber": "={{ $('Mensaje Recibido').item.json.messages[0].from }}",
+        "textBody": "={{ $json.mensaje }}",
+        "additionalFields": {}
+      },
+      "id": "670b98c5-a781-4764-b2bd-292a077af73d",
+      "name": "Avisar Datos Faltantes",
+      "type": "n8n-nodes-base.whatsApp",
+      "position": [
+        3648,
+        1824
+      ],
+      "typeVersion": 1,
+      "webhookId": "8b1fbd19-51e8-46d7-a624-82e2a5ee2015",
+      "connections": {},
+      "credentials": {
+        "whatsAppApi": {
+          "id": "PmQTH6hiecmPa9AU",
+          "name": "TU_CREDENCIAL_WHATSAPP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.mapbox.com/geocoding/v5/mapbox.places/{{ encodeURIComponent($json.dashboard_payload.delivery_address || 'no disponible') }}.json?country=co&language=es&limit=1&proximity=-75.8814,8.7479&access_token=TU_TOKEN_PUBLICO_MAPBOX",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3696,
+        1168
+      ],
+      "id": "6580f2a9-6af5-447e-8c47-626ba13ccce5",
+      "name": "Geocodificar Dirección",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Toma el payload del pedido + la respuesta de Mapbox y agrega lat/lng si faltan.\nconst prev = $('Formato Pedido').first().json;\nconst geo = $input.first().json || {};\nconst center = geo?.features?.[0]?.center;   // Mapbox devuelve [lng, lat]\nconst p = { ...prev.dashboard_payload };\nif (p && !p.latitude && !p.longitude && Array.isArray(center) && center.length === 2) {\n  p.latitude = center[1];\n  p.longitude = center[0];\n}\nreturn [{ json: { ...prev, dashboard_payload: p } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3952,
+        1152
+      ],
+      "id": "66f5bcee-aa69-4076-99d6-ef325bef51ef",
+      "name": "Combinar Coordenadas"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO bot_sessions (phone, phone_number_id, tenant_id, business_name, last_human_at, state, followups_sent, updated_at)\nVALUES (\n  '{{ $('Mensaje Recibido').item.json.messages[0].from }}',\n  '{{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}',\n  4,                              -- <<< TENANT del negocio\n  'Restaurante Demo',          -- <<< NOMBRE del negocio\n  NOW(), 'flow', 0, NOW()\n)\nON CONFLICT (phone, phone_number_id) DO UPDATE\nSET last_human_at  = NOW(),\n    tenant_id      = 4,          -- <<< TENANT del negocio\n    business_name  = 'Restaurante Demo',\n    followups_sent = 0,\n    state          = 'flow',\n    updated_at     = NOW();\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -672,
+        2208
+      ],
+      "id": "1ff18ca1-17ba-4f61-9f9d-d76ba001a605",
+      "name": "Upsert Sesión Bot",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE bot_sessions\nSET state = 'done', followups_sent = 2, updated_at = NOW()\nWHERE phone = '{{ $('Mensaje Recibido').item.json.messages[0].from }}'\n  AND phone_number_id = '{{ $('Mensaje Recibido').item.json.metadata.phone_number_id }}'\nRETURNING phone, state;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        4304,
+        1152
+      ],
+      "id": "dbcfc641-105d-4493-af5e-548236de8766",
+      "name": "Marcar Sesión Completada",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT o.id, o.tenant_id, o.customer_name,\n       o.total + COALESCE(o.shipping_cost, 0) AS monto_esperado\nFROM orders o\nWHERE RIGHT(regexp_replace(o.customer_phone, '\\D', '', 'g'), 10)\n      = RIGHT('{{ $json.messages[0].from }}', 10)\n  AND o.payment_method <> 'Efectivo'\n  AND o.status = 'awaiting_verification'\n  AND o.created_at > NOW() - INTERVAL '6 hours'\nORDER BY o.created_at DESC\nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1232,
+        3024
+      ],
+      "id": "7b8cd0dd-cc82-490e-a3da-172918fc0e48",
+      "name": "Resolver Pedido Abierto",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8270e34e-c3bf-4f0d-b7dd-2037eedc2bf6",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1072,
+        3024
+      ],
+      "id": "7960cd36-1e97-4f4f-af95-7b2451f05ff7",
+      "name": "¿Hay Pedido Abierto?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH pedido AS (\n  SELECT id, tenant_id, total + COALESCE(shipping_cost, 0) AS monto, created_at\n  FROM orders\n  WHERE id = {{ $json.id }}\n    AND tenant_id = {{ $json.tenant_id }}\n    AND status = 'awaiting_verification'\n),\ncandidato AS (\n  SELECT bp.id\n  FROM bank_payments bp, pedido p\n  WHERE bp.tenant_id = p.tenant_id\n    AND (bp.usado_por_pedido IS NULL\n         OR bp.usado_por_pedido = p.id)                   -- anti \"ya usada\" 🔁 PERO auto-recuperable\n    AND bp.monto = p.monto                                -- monto EXACTO\n    AND bp.fecha_pago >= p.created_at - INTERVAL '5 minutes'\n    AND bp.fecha_pago <= NOW() + INTERVAL '1 minute'\n    AND COALESCE(bp.dkim, '') <> 'fail'                   -- correo falsificado no cuenta\n    AND COALESCE(bp.dmarc, '') <> 'fail'\n  ORDER BY bp.fecha_pago ASC\n  LIMIT 1\n  FOR UPDATE SKIP LOCKED\n),\nusado AS (\n  UPDATE bank_payments\n     SET usado_por_pedido = (SELECT id FROM pedido), usado_at = NOW()\n   WHERE id IN (SELECT id FROM candidato)\n  RETURNING id, monto, pagador, banco_origen, fecha_pago\n)\nSELECT (SELECT id           FROM usado) AS pago_id,\n       (SELECT monto        FROM usado) AS pago_monto,\n       (SELECT pagador      FROM usado) AS pago_pagador,\n       (SELECT banco_origen FROM usado) AS pago_banco,\n       (SELECT fecha_pago   FROM usado) AS pago_fecha;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -896,
+        2912
+      ],
+      "id": "2cf3a4d9-8e17-412d-807a-232c1acf2012",
+      "name": "Cruce Pago Automático",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4f830c71-dc3b-4caf-9a68-2e2f263240d7",
+              "leftValue": "={{ $json.pago_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -720,
+        2912
+      ],
+      "id": "8ebc0a97-2ca8-4994-b732-408f41b74495",
+      "name": "¿Pago Confirmado?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://agentiapi.talos.example.com/webhook/dashboard/verify-payment",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-talos-proxy",
+              "value": "TU_SECRETO_PROXY"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"order_id\": {{ $('Resolver Pedido Abierto').item.json.id }},\n  \"tenant_id\": {{ $('Resolver Pedido Abierto').item.json.tenant_id }},\n  \"verified_by\": \"auto-correo-banco\",\n  \"action\": \"approved\",\n  \"notes\": \"Cruce automático: pago #{{ $json.pago_id }} · {{ $json.pago_banco }} · ${{ $json.pago_monto }} · {{ $json.pago_pagador || 'pagador no informado por el banco' }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -416,
+        2896
+      ],
+      "id": "cc137cb0-2dd2-4a0c-91d3-fd8190bf250c",
+      "name": "Confirmar Pago Automático"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id\nFROM (\n  SELECT id, message->>'content' AS contenido\n  FROM n8n_chat_histories\n  WHERE session_id = '{{ $('Mensaje Recibido').first().json.messages[0].from }}:{{ $('Mensaje Recibido').first().json.metadata.phone_number_id }}'\n    AND message->>'type' = 'ai'\n  ORDER BY id DESC\n  LIMIT 4\n) AS ultimos\nWHERE contenido LIKE '%PEDIDO_PENDIENTE_CONFIRMACION%'\nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        720,
+        1472
+      ],
+      "id": "b389b1e6-a437-47c9-b9f4-49b545d0e2f3",
+      "name": "Validar Comprobante",
+      "credentials": {
+        "postgres": {
+          "id": "ZX91fvAh4j3cE7TW",
+          "name": "TU_CREDENCIAL_POSTGRES"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Mensaje Recibido": [
+      {
+        "json": {
+          "messaging_product": "whatsapp",
+          "metadata": {
+            "display_phone_number": "15551713636",
+            "phone_number_id": "1004464636088971"
+          },
+          "contacts": [
+            {
+              "profile": {
+                "name": "GuillermoRL🛡️"
+              },
+              "wa_id": "573000000000",
+              "user_id": "CO.1600811257658899"
+            }
+          ],
+          "messages": [
+            {
+              "from": "573000000000",
+              "from_user_id": "CO.1600811257658899",
+              "id": "wamid.HBgMNTczMDQyMjgwOTc4FQIAEhgWM0VCMEY5NjIzOEVEOUNFNjhCRDAxOAA=",
+              "timestamp": "1792121074",
+              "type": "image",
+              "image": {
+                "mime_type": "image/jpeg",
+                "sha256": "8Pa7KwGc+FJ6ZqoVWYVUMoNmLG9vgOF0kYfkKfr8h3o=",
+                "id": "1442981597786468",
+                "url": "https://lookaside.fbsbx.com/whatsapp_business/attachments/?mid=1442981597786468&source=webhook&ext=1792121375&hash=ATy1NILGM3deEl6XYLqTAy-en_H6z0m1PCrww-yVH7W2gQ"
+              }
+            }
+          ],
+          "field": "messages"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Tipo de Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Obtener URL Imagen",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Validar Comprobante",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtener URL Documento",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Validar Comprobante",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Texto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mapbox Geocoding",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtener URL Audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Es Opt-in?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Espejo Interactivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener URL Imagen": {
+      "main": [
+        [
+          {
+            "node": "Descargar Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Imagen": {
+      "main": [
+        [
+          {
+            "node": "Analizar Imagen (OpenAI)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Espejo Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analizar Imagen (OpenAI)": {
+      "main": [
+        [
+          {
+            "node": "Set Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Imagen": {
+      "main": [
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener URL Documento": {
+      "main": [
+        [
+          {
+            "node": "Descargar Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Documento": {
+      "main": [
+        [
+          {
+            "node": "Extraer Contenido PDF",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Espejo Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Contenido PDF": {
+      "main": [
+        [
+          {
+            "node": "Gemini Extraer PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Extraer PDF": {
+      "main": [
+        [
+          {
+            "node": "Set Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Documento": {
+      "main": [
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Texto": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Texto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapbox Geocoding": {
+      "main": [
+        [
+          {
+            "node": "Set Ubicacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Ubicacion": {
+      "main": [
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Espejo Ubicacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener URL Audio": {
+      "main": [
+        [
+          {
+            "node": "Descargar Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Audio": {
+      "main": [
+        [
+          {
+            "node": "Transcribir Audio",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Espejo Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribir Audio": {
+      "main": [
+        [
+          {
+            "node": "Set Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Audio": {
+      "main": [
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente IA Restaurante": {
+      "main": [
+        [
+          {
+            "node": "¿Enviar Menu?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "¿Pedido Confirmado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model (Agente)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria Postgres (Agente)": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Enviar Menu?": {
+      "main": [
+        [
+          {
+            "node": "Descargar Menu (Google Drive)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Pedido Confirmado?": {
+      "main": [
+        [
+          {
+            "node": "Formatear Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Esperar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Esperar": {
+      "main": [
+        [
+          {
+            "node": "Responder al Cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Descargar Menu (Google Drive)": {
+      "main": [
+        [
+          {
+            "node": "Enviar Menu al Cliente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Preparar Espejo Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatear Pedido": {
+      "main": [
+        [
+          {
+            "node": "Formato Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model (Pedido)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Formatear Pedido",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria Postgres (Pedido)": {
+      "ai_memory": [
+        [
+          {
+            "node": "Formatear Pedido",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser Estructurado": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Formatear Pedido",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato Pedido": {
+      "main": [
+        [
+          {
+            "node": "¿Pedido Válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base_de_datos_productos": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar al Cliente": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Confirmacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es Opt-in?": {
+      "main": [
+        [
+          {
+            "node": "Guardar Opt-in",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Sin Opt-in",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Opt-in": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Suscripción",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es Confirmación de Pedido?": {
+      "main": [
+        [
+          {
+            "node": "¿Hay Pedido Pendiente?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay Pedido Pendiente?": {
+      "main": [
+        [
+          {
+            "node": "¿Pedido Confirmado en Sesión?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Pedido Confirmado en Sesión?": {
+      "main": [
+        [
+          {
+            "node": "Formatear Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agente IA Restaurante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Dentro de Horario?": {
+      "main": [
+        [
+          {
+            "node": "Si o no",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Si o no": {
+      "main": [
+        [
+          {
+            "node": "Tipo de Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Responder Fuera de Horario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Mensaje Válido?": {
+      "main": [
+        [
+          {
+            "node": "¿Dentro de Horario?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar en Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Marcar Sesión Completada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Token Manager": {
+      "main": [
+        [
+          {
+            "node": "Push Nuevo Pedido Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje Recibido": {
+      "main": [
+        [
+          {
+            "node": "Extraer wamid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Texto": {
+      "main": [
+        [
+          {
+            "node": "Espejo Incoming",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "¿Es Confirmación de Pedido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder al Cliente": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Outgoing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Outgoing": {
+      "main": [
+        [
+          {
+            "node": "Espejo Outgoing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Menu": {
+      "main": [
+        [
+          {
+            "node": "Espejo Menu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Confirmacion": {
+      "main": [
+        [
+          {
+            "node": "Espejo Confirmacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Imagen": {
+      "main": [
+        [
+          {
+            "node": "Espejo Imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Documento": {
+      "main": [
+        [
+          {
+            "node": "Espejo Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Audio": {
+      "main": [
+        [
+          {
+            "node": "Espejo Audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Ubicacion": {
+      "main": [
+        [
+          {
+            "node": "Espejo Ubicacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Interactivo": {
+      "main": [
+        [
+          {
+            "node": "Espejo Interactivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Fuera Horario": {
+      "main": [
+        [
+          {
+            "node": "Espejo Fuera Horario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Suscripcion": {
+      "main": [
+        [
+          {
+            "node": "Espejo Suscripcion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Espejo Sin Opt-in": {
+      "main": [
+        [
+          {
+            "node": "Espejo Sin Opt-in",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Fuera de Horario": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Fuera Horario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar Suscripción": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Suscripcion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder Sin Opt-in": {
+      "main": [
+        [
+          {
+            "node": "Preparar Espejo Sin Opt-in",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer wamid": {
+      "main": [
+        [
+          {
+            "node": "Dedupe wamid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dedupe wamid": {
+      "main": [
+        [
+          {
+            "node": "Restaurar Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restaurar Payload": {
+      "main": [
+        [
+          {
+            "node": "¿Mensaje Válido?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upsert Sesión Bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Pedido Válido?": {
+      "main": [
+        [
+          {
+            "node": "Notificar al Encargado",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Confirmar al Cliente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Geocodificar Dirección",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avisar Datos Faltantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geocodificar Dirección": {
+      "main": [
+        [
+          {
+            "node": "Combinar Coordenadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combinar Coordenadas": {
+      "main": [
+        [
+          {
+            "node": "Registrar en Dashboard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Sesión Bot": {
+      "main": [
+        []
+      ]
+    },
+    "Marcar Sesión Completada": {
+      "main": [
+        [
+          {
+            "node": "Obtener Token Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolver Pedido Abierto": {
+      "main": [
+        [
+          {
+            "node": "¿Hay Pedido Abierto?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay Pedido Abierto?": {
+      "main": [
+        [
+          {
+            "node": "Cruce Pago Automático",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cruce Pago Automático": {
+      "main": [
+        [
+          {
+            "node": "¿Pago Confirmado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Pago Confirmado?": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Pago Automático",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Comprobante": {
+      "main": [
+        [
+          {
+            "node": "Formatear Pedido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "82ebd640-5162-4ebb-ba2a-eee5882a5413",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c75a37340830d286576bf4c2a4dd5c46fcdaa1d1c2fe22bc7b247eaaa343e16f"
+  },
+  "id": "tZbkW3N1ZFWqu8Xm",
+  "tags": [
+    {
+      "updatedAt": "2026-07-24T22:34:05.834Z",
+      "createdAt": "2026-07-24T22:34:05.834Z",
+      "id": "duJhHQ1PXFLeOeRh",
+      "name": "Automatizacion_Negocios"
+    }
+  ]
+}
