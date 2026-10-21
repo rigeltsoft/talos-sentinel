@@ -8,4 +8,4 @@ Este repositorio **no incluye capturas con datos reales**. Para que el portafoli
 4. `flujo.gif` — un GIF corto de 15-20 s: pedido → panel → «Verificar pago» → «Preparando» ✅.
 
 ⚠️ **Regla:** todas las capturas con **datos ficticios** (nombres y teléfonos inventados, dominios de
-ejemplo). Si tienes una captura real, pixelar los datos personales antes de subirla.
+ejemplo).
